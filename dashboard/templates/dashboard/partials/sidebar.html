@@ -1,0 +1,100 @@
+<!-- SIDEBAR / MASTER LIST (Bên trái - Tích hợp Cây danh mục & Vị trí Chương/Điều) -->
+<div class="w-1/3 border-r border-slate-800 flex flex-col bg-slate-950">
+    <!-- Header Sidebar -->
+    <div class="p-4 border-b border-slate-800 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <h1 class="font-bold text-base text-emerald-400 tracking-wide">vnxBox Knowledge</h1>
+            <span class="text-xs px-2 py-0.5 bg-slate-900 border border-slate-800 rounded-full text-slate-400 font-mono"
+                x-text="chapters.length + ' mục'">
+            </span>
+        </div>
+        <!-- Nút mở Modal Thêm mới tri thức / Upload file -->
+        <button @click="showUploadModal = true"
+            class="px-3 py-1.5 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-semibold rounded-xl shadow-md transition flex items-center gap-1 active:scale-95">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            <span>Thêm mới</span>
+        </button>
+    </div>
+
+    <!-- Filter trạng thái & Bộ lọc nhanh -->
+    <div class="p-3 border-b border-slate-800 bg-slate-900/40 flex flex-col gap-2 text-xs">
+        <div class="flex gap-1.5">
+            <button @click="filterStatus = ''"
+                :class="filterStatus === '' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-slate-200'"
+                class="px-2.5 py-1 rounded-lg transition font-medium">Tất cả</button>
+            <button @click="filterStatus = 'AUTO_APPROVED'"
+                :class="filterStatus === 'AUTO_APPROVED' ? 'bg-emerald-600 text-white shadow' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-slate-200'"
+                class="px-2.5 py-1 rounded-lg transition font-medium">Tự động duyệt</button>
+            <button @click="filterStatus = 'NEEDS_REVIEW'"
+                :class="filterStatus === 'NEEDS_REVIEW' ? 'bg-amber-600 text-white shadow' : 'bg-slate-900 text-slate-400 border border-slate-800 hover:text-slate-200'"
+                class="px-2.5 py-1 rounded-lg transition font-medium">Cần kiểm tra</button>
+        </div>
+
+        <!-- Thanh chọn nhanh Lĩnh vực (Domain Filter) -->
+        <div class="flex items-center gap-2">
+            <select x-model="filterDomain"
+                class="w-full bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                <option value="">📂 Tất cả Lĩnh vực (Domains)</option>
+                <template x-for="d in availableDomains">
+                    <option :value="d.domain_name" x-text="d.domain_name"></option>
+                </template>
+            </select>
+        </div>
+    </div>
+
+    <!-- Danh sách Chapters (Master List hiển thị Định vị Chương/Điều & Trạng thái) -->
+    <div class="flex-1 overflow-y-auto divide-y divide-slate-800/40">
+        <template x-for="item in filteredChapters" :key="item.id">
+            <div @click="selectedChapter = item" :class="selectedChapter && selectedChapter.id === item.id 
+                        ? 'bg-slate-900/90 border-l-4 border-emerald-500 shadow-inner' 
+                        : 'hover:bg-slate-900/40'" class="p-4 cursor-pointer transition group">
+
+                <div class="flex justify-between items-start mb-1.5 gap-2">
+                    <!-- Badge Lĩnh vực & Nghiệp vụ con -->
+                    <div class="flex items-center gap-1.5 flex-wrap">
+                        <span
+                            class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800/50"
+                            x-text="item.domain_name"></span>
+                        <template x-if="item.sub_domain">
+                            <span
+                                class="text-[10px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-300 border border-slate-800"
+                                x-text="item.sub_domain"></span>
+                        </template>
+                    </div>
+
+                    <!-- Badge Trạng thái -->
+                    <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider shrink-0"
+                        :class="{
+                            'bg-emerald-950 text-emerald-400 border border-emerald-800': item.status === 'APPROVED' || item.status === 'AUTO_APPROVED',
+                            'bg-amber-950 text-amber-400 border border-amber-800': item.status === 'NEEDS_REVIEW'
+                        }" x-text="item.status"></span>
+                </div>
+
+                <!-- Tiêu đề Chapter -->
+                <h3 class="font-semibold text-xs text-slate-100 group-hover:text-emerald-300 transition line-clamp-1 mb-1"
+                    x-text="item.title"></h3>
+
+                <!-- Định vị sâu: Chương / Điều -->
+                <template x-if="item.chapter_code || item.article_code">
+                    <p class="text-[11px] text-emerald-500 font-mono mb-1 flex items-center gap-1">
+                        <span>📍</span>
+                        <span
+                            x-text="(item.chapter_code || '') + (item.article_code ? ' > ' + item.article_code : '')"></span>
+                    </p>
+                </template>
+
+                <!-- Tóm tắt ngắn -->
+                <p class="text-xs text-slate-400 line-clamp-2 leading-relaxed" x-text="item.summary"></p>
+            </div>
+        </template>
+
+        <!-- Thông báo nếu không có dữ liệu khớp bộ lọc -->
+        <template x-if="filteredChapters.length === 0">
+            <div class="p-8 text-center text-slate-500 text-xs">
+                Không tìm thấy phân đoạn tri thức nào phù hợp.
+            </div>
+        </template>
+    </div>
+</div>

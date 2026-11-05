@@ -1,0 +1,52 @@
+1. Tóm tắt các nội dung đã hoàn thành
+Lõi RAG & Ingestion Thông minh:
+
+Xây dựng hệ thống parser đa định dạng (PDF, Excel đa sheet, Word, Markdown, OCR ảnh) và bộ chia tài liệu Parent-Child.
+
+Tích hợp AI (Ollama - Qwen2.5-coder chạy local 100%) để tự động phân tích metadata, tóm tắt cốt lõi và tự sinh tập hợp câu hỏi định tuyến ý định (faq_variations) phục vụ Intent Routing.
+
+Bảo mật & Chống ảo giác toán học (Secure Sandbox):
+
+Hoàn thiện môi trường cách ly multiprocessing với module blacklisting để thực thi mã tính toán Python an toàn.
+
+Tích hợp Natural Language Formatter để dịch kết quả thô thành văn phong Tiếng Việt chuẩn số học (Tiền tệ VNĐ có phân cách hàng nghìn, trọng lượng dùng dấu phẩy thập phân như 3,88 chỉ).
+
+Quản lý Phiên & Bộ nhớ:
+
+Thiết lập cơ chế Sliding Window Memory qua session_id giúp duy trì ngữ cảnh hội thoại 8–10 tin nhắn gần nhất.
+
+Giao diện Frontend (Tailwind CSS & Alpine.js):
+
+Hoàn thiện Responsive Admin Dashboard, Khung Chat Workspace, Floating Chat Widget, cùng các Modal Nạp Tri Thức (upload_modal.html) và Modal AI Biên soạn lại (recompile_modal.html).
+
+Vừa khắc phục thành công lỗi liên kết dữ liệu giữa KnowledgeChapter và KnowledgeFAQ (faq_variations), giúp giao diện hiển thị chính xác nguồn gốc file, phạm vi áp dụng và danh sách câu hỏi mẫu do AI tự sinh.
+
+2. Các file mã nguồn đã được cập nhật
+Backend:
+
+knowledge/models.py: Định nghĩa các model KnowledgeChapter, KnowledgeFAQ (với related_name='faq_variations'), ChatSession, và ChatMessage.
+
+knowledge/serializers.py: Cấu hình DRF serializers tích hợp faq_variations để đóng gói dữ liệu trả về cho Frontend.
+
+knowledge/ai_services.py: Xử lý logic gọi Ollama Local LLM, phân tích metadata, xử lý nạp file/raw text, tích hợp Formatter và cơ chế Fallback dự phòng FAQ.
+
+knowledge/views.py & knowledge/urls.py: Các API endpoints quản lý tri thức, ingestion và chat query.
+
+Frontend & Dashboard:
+
+templates/dashboard/admin_dashboard.html: Cập nhật giao diện Kho Tri Thức, bộ lọc lĩnh vực/trạng thái và hiển thị chi tiết nguồn file, phạm vi, câu hỏi mẫu faq_variations.
+
+templates/dashboard/partials/upload_modal.html: Modal nạp file đa định dạng và văn bản thô.
+
+templates/dashboard/partials/recompile_modal.html: Modal trợ lý AI biên soạn lại tri thức với các preset có sẵn.
+
+static/dashboard/js/dashboard.js: Controller Alpine.js quản lý toàn bộ trạng thái điều hướng, bộ lọc, xử lý chat và đồng bộ session_id.
+
+3. Kế hoạch tiếp theo cho ngày mai
+Kiểm thử toàn trình (End-to-End Testing): Thực hiện nạp thử các tệp tài liệu thực tế (như file Excel bảng giá vàng nhiều sheet và file PDF quy chế nội bộ) để kiểm tra độ mượt của quá trình bóc tách tự động.
+
+Kiểm tra Intent Routing & Hybrid Search: Thử nghiệm tra cứu với các câu hỏi biến thể xem hệ thống có định đúng phân hệ và trích dẫn đúng nguồn tri thức hay không.
+
+Kiểm thử Secure Sandbox: Chạy các kịch bản câu hỏi yêu cầu tính toán tài chính, quy đổi trọng lượng vàng phức tạp qua khung chat để đảm bảo tính toán chính xác tuyệt đối và hiển thị chuẩn định dạng Tiếng Việt.
+
+Tinh chỉnh UX/UI & Đóng gói: Rà soát lại trải nghiệm người dùng trên giao diện quản trị, tối ưu hóa các hiệu ứng loading/transition và chuẩn bị sẵn sàng chạy thử nghiệm thực tế trong môi trường doanh nghiệp.

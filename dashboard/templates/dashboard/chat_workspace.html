@@ -1,0 +1,138 @@
+<div class="flex-1 flex flex-col bg-slate-950 h-full max-w-5xl mx-auto w-full p-6 overflow-hidden">
+
+    <!-- Welcome Header khi chưa chat nhiều -->
+    <div class="text-center py-4 shrink-0 border-b border-slate-800/60 mb-4">
+        <h2 class="text-lg font-bold text-white tracking-tight">Tra cứu Quy trình & Tính toán Nghiệp vụ Doanh nghiệp
+        </h2>
+        <p class="text-xs text-slate-400 mt-0.5">Hệ thống bảo mật cục bộ - Chống ảo giác toán học qua Secure Sandbox</p>
+    </div>
+
+    <!-- Khung hiển thị danh sách tin nhắn chat hoặc Màn hình chào mừng khi chưa có tin nhắn -->
+    <div class="flex-1 overflow-y-auto space-y-4 pr-2 mb-4 flex flex-col">
+
+        <!-- MÀN HÌNH CHÀO MỪNG & GỢI Ý NHANH (STARTER CHIPS) -->
+        <template x-if="messages.length === 0">
+            <div class="flex-1 flex flex-col items-center justify-center p-6 text-center my-auto">
+                <div
+                    class="w-14 h-14 rounded-2xl bg-emerald-950 border border-emerald-500/40 flex items-center justify-center text-emerald-400 text-2xl mb-3 shadow-xl">
+                    🤖
+                </div>
+                <h3 class="text-base font-bold text-slate-200 mb-1">Trợ lý AI nội bộ vnxBox sẵn sàng</h3>
+                <p class="text-xs text-slate-400 max-w-md mb-6">
+                    Chọn nhanh một trong các chủ đề nghiệp vụ bên dưới hoặc nhập trực tiếp câu hỏi của bạn để bắt đầu
+                    tra cứu:
+                </p>
+
+                <!-- Các thẻ gợi ý nhanh dạng Card Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 max-w-2xl w-full text-left">
+                    <button
+                        @click="question = 'Tính số tiền bù trừ khi đổi 6 chỉ vàng 9999 lấy 10 chỉ vàng 980?'; sendQuery();"
+                        class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 rounded-xl transition group">
+                        <div class="text-[11px] font-bold text-emerald-400 mb-0.5">🧮 Tính toán Quy đổi Vàng</div>
+                        <div class="text-xs text-slate-300 group-hover:text-white truncate">Đổi 6 chỉ 9999 lấy 10 chỉ
+                            980 bù bao nhiêu?</div>
+                    </button>
+
+                    <button @click="question = 'Tra cứu quy chế thu đổi vàng và tỷ lệ hao hụt chi tiết'; sendQuery();"
+                        class="p-3 bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-emerald-500/50 rounded-xl transition group">
+                        <div class="text-[11px] font-bold text-emerald-400 mb-0.5">📋 Tra cứu Quy chế Nội bộ</div>
+                        <div class="text-xs text-slate-300 group-hover:text-white truncate">Xem biểu phí, điều kiện và
+                            định mức áp dụng.</div>
+                    </button>
+                </div>
+            </div>
+        </template>
+
+        <!-- DANH SÁCH TIN NHẮN CHAT -->
+        <template x-for="msg in messages">
+            <div class="flex w-full" :class="msg.sender === 'user' ? 'justify-end' : 'justify-start'">
+
+                <!-- Bong bóng chat: Dùng w-fit để tự co giãn theo nội dung -->
+                <div :class="msg.sender === 'user' 
+                        ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-2xl rounded-tr-sm shadow-lg ml-12' 
+                        : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-2xl rounded-tl-sm shadow-xl mr-12'"
+                    class="px-4 py-3 max-w-[85%] w-fit text-left flex flex-col">
+
+                    <!-- Nội dung text căn trái tuyệt đối -->
+                    <div class="text-left leading-relaxed text-xs sm:text-sm break-words m-0 p-0" x-text="msg.text">
+                    </div>
+
+                    <!-- Hiển thị kết quả Sandbox nếu có tính toán số học -->
+                    <template x-if="msg.sandbox_execution && msg.sandbox_execution.success">
+                        <div
+                            class="mt-3 p-2.5 bg-slate-950 border border-emerald-500/40 rounded-xl font-mono text-xs text-emerald-300 w-full text-left">
+                            <div class="flex items-center gap-1.5 text-emerald-400 font-bold mb-1">
+                                <span>⚡ Kết quả tính toán từ Secure Sandbox:</span>
+                            </div>
+                            <div class="text-white font-bold text-sm" x-text="msg.sandbox_execution.output"></div>
+                        </div>
+                    </template>
+
+                    <!-- HIỂN THỊ NGUỒN GỐC TÀI LIỆU VÀ TRÍCH DẪN (Citations) -->
+                    <template x-if="msg.citations && msg.citations.length > 0">
+                        <div class="mt-3 pt-2.5 border-t border-slate-800/80 space-y-2 w-full text-left">
+                            <p
+                                class="text-[11px] text-emerald-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                                <span>📍 Nguồn gốc tài liệu & Phân hệ:</span>
+                            </p>
+
+                            <div class="flex flex-col gap-1.5">
+                                <template x-for="cite in msg.citations">
+                                    <div @click="jumpToConfigAndEdit(cite.chapter_id)"
+                                        class="bg-slate-950 hover:bg-slate-900 p-2 rounded-xl border border-slate-800 text-xs text-slate-300 flex items-center justify-between gap-3 transition cursor-pointer group">
+                                        <div class="flex flex-col gap-0.5 truncate text-left">
+                                            <div class="flex items-center gap-2">
+                                                <span
+                                                    class="px-1.5 py-0.5 rounded bg-emerald-950 text-emerald-400 text-[10px] font-semibold"
+                                                    x-text="cite.domain_name"></span>
+                                                <template x-if="cite.sub_domain">
+                                                    <span class="text-slate-400 text-[10px]"
+                                                        x-text="'> ' + cite.sub_domain"></span>
+                                                </template>
+                                            </div>
+                                            <span
+                                                class="font-semibold text-slate-200 group-hover:text-emerald-300 transition truncate text-left"
+                                                x-text="cite.title"></span>
+                                        </div>
+                                        <span
+                                            class="text-[10px] bg-emerald-950 text-emerald-400 px-2 py-1 rounded border border-emerald-900 shrink-0 font-medium">Sửa
+                                            / Xem ↗</span>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading Indicator -->
+        <template x-if="loading">
+            <div class="flex justify-start w-full">
+                <div
+                    class="flex items-center gap-2 text-slate-400 text-xs bg-slate-900 px-3.5 py-2.5 rounded-xl w-fit border border-slate-800">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:0.2s]"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-bounce [animation-delay:0.4s]"></span>
+                    <span>AI đang định tuyến ý định, truy vấn Hybrid Search & chạy Sandbox...</span>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- Khung nhập câu hỏi dưới cùng -->
+    <div class="bg-slate-900 border border-slate-800 p-3 rounded-2xl flex gap-3 items-center shrink-0 shadow-2xl">
+        <input type="text" x-model="question" @keydown.enter="sendQuery"
+            placeholder="Nhập câu hỏi quy định, tính toán tài chính, đổi vàng..."
+            class="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 transition font-sans">
+        <button @click="sendQuery"
+            class="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-6 py-3 rounded-xl text-xs font-bold shadow transition flex items-center gap-2 shrink-0">
+            <span>Gửi câu hỏi</span>
+            <svg class="w-4 h-4 rotate-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+            </svg>
+        </button>
+    </div>
+</div>

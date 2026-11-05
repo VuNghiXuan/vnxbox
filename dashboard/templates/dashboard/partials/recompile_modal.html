@@ -1,0 +1,110 @@
+<!-- Modal AI Biên soạn lại Tri thức (Hỗ trợ chọn Chapter linh hoạt & Tìm kiếm danh mục) -->
+<div x-show="showRecompileModal"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
+    x-transition.opacity>
+
+    <div @click.away="showRecompileModal = false"
+        class="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col">
+
+        <!-- Modal Header -->
+        <div class="px-6 py-4 border-b border-slate-800 flex justify-between items-center bg-slate-950/50">
+            <div class="flex items-center gap-2.5">
+                <div
+                    class="w-8 h-8 rounded-xl bg-emerald-950 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-sm shadow-inner">
+                    🤖
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-100 text-sm">Trợ lý AI Biên soạn & Chuẩn hóa Tri thức</h3>
+                    <p class="text-[11px] text-slate-400">Chọn mục tri thức cụ thể để AI xử lý chính xác</p>
+                </div>
+            </div>
+            <button @click="showRecompileModal = false" class="text-slate-400 hover:text-white transition">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="p-6 flex flex-col gap-4">
+
+            <!-- 1. CHỌN HOẶC TÌM KIẾM CHAPTER CỤ THỂ ĐỂ BIÊN SOẠN -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium text-slate-400 flex justify-between">
+                    <span>Chọn Mục Tri Thức (Chapter) cần biên soạn:</span>
+                    <span class="text-emerald-400 font-mono text-[11px]"
+                        x-text="selectedChapter ? 'Đang chọn: #' + selectedChapter.id : 'Chưa chọn'"></span>
+                </label>
+
+                <select x-model.number="selectedChapterIdForRecompile"
+                    @change="let found = chapters.find(c => c.id === parseInt($event.target.value)); if(found) selectedChapter = found;"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl p-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition font-mono">
+                    <option value="">-- Chọn mục từ kho tri thức hiện tại --</option>
+                    <template x-for="chap in chapters" :key="chap.id">
+                        <option :value="chap.id" :selected="selectedChapter && selectedChapter.id === chap.id"
+                            x-text="`[${chap.domain_name || 'Chung'}] ID #${chap.id}: ${chap.title || chap.raw_text.substring(0, 50)}...`">
+                        </option>
+                    </template>
+                </select>
+            </div>
+
+            <!-- Hiển thị nhanh tóm tắt nội dung Chapter đang chọn -->
+            <template x-if="selectedChapter">
+                <div class="bg-slate-950/60 border border-slate-800/80 rounded-xl p-3 flex flex-col gap-1 text-xs">
+                    <div class="flex items-center justify-between text-[11px] text-slate-400 font-mono">
+                        <span class="text-emerald-400 font-semibold" x-text="selectedChapter.domain_name"></span>
+                        <span x-text="'Trạng thái: ' + selectedChapter.status"></span>
+                    </div>
+                    <div class="text-slate-300 font-medium line-clamp-2"
+                        x-text="selectedChapter.title || selectedChapter.raw_text"></div>
+                </div>
+            </template>
+
+            <!-- 2. Quick Preset Buttons (Chọn nhanh mục đích biên soạn) -->
+            <div class="flex flex-col gap-1.5 mt-1">
+                <label class="text-xs font-medium text-slate-400">Chọn nhanh mẫu hướng dẫn (Preset):</label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button"
+                        @click="recompileInstruction = 'Hãy biên soạn, chuẩn hóa lại văn phong pháp lý mạch lạc, rõ ràng và giữ nguyên vẹn dữ liệu gốc.'"
+                        class="text-[11px] px-3 py-1.5 bg-slate-800 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-500/50 text-slate-300 rounded-lg transition shadow-sm">
+                        📜 Chuẩn hóa pháp lý
+                    </button>
+                    <button type="button"
+                        @click="recompileInstruction = 'Hãy tóm tắt nội dung này thành các gạch đầu dòng (bullet points) ngắn gọn, súc tích.'"
+                        class="text-[11px] px-3 py-1.5 bg-slate-800 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-500/50 text-slate-300 rounded-lg transition shadow-sm">
+                        📌 Tóm tắt ý chính
+                    </button>
+                    <button type="button"
+                        @click="recompileInstruction = 'Hãy kiểm tra, định dạng lại các công thức tính toán và số học thành bảng Markdown rõ ràng.'"
+                        class="text-[11px] px-3 py-1.5 bg-slate-800 hover:bg-emerald-950/60 border border-slate-700 hover:border-emerald-500/50 text-slate-300 rounded-lg transition shadow-sm">
+                        🧮 Chuẩn hóa số học / Bảng
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3. Textarea nhập hướng dẫn tùy chỉnh -->
+            <div class="flex flex-col gap-1.5">
+                <label class="text-xs font-medium text-slate-400">Hoặc nhập hướng dẫn chi tiết cho AI:</label>
+                <textarea x-model="recompileInstruction" rows="3"
+                    class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 transition font-mono"
+                    placeholder="Nhập yêu cầu cụ thể..."></textarea>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="px-6 py-4 border-t border-slate-800 bg-slate-950/50 flex justify-end gap-3">
+            <button @click="showRecompileModal = false"
+                class="px-4 py-2 rounded-xl text-xs font-medium text-slate-400 hover:text-white transition">
+                Hủy
+            </button>
+            <button @click="recompileWithAI()" :disabled="recompiling || !selectedChapter"
+                class="px-5 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl transition flex items-center gap-2 disabled:opacity-50 shadow-lg shadow-emerald-950/50">
+                <span x-show="recompiling"
+                    class="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <span x-text="recompiling ? 'Đang biên soạn lại...' : '✨ Thực thi Biên soạn AI'"></span>
+            </button>
+        </div>
+
+    </div>
+</div>

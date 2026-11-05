@@ -1,0 +1,93 @@
+/* vnxBox Enterprise Dark Theme Engine (100% Offline & Independent) */
+:root {
+    color-scheme: dark;
+}
+
+body {
+    background-color: #020617;
+    /* bg-slate-950 */
+    color: #f1f5f9;
+    /* text-slate-100 */
+    font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* --- Utility Classes bổ sung cho Tailwind v2 / Custom Dark Theme --- */
+.bg-slate-950 {
+    background-color: #020617 !important;
+}
+
+.bg-slate-900 {
+    background-color: #0f172a !important;
+}
+
+.bg-slate-800 {
+    background-color: #1e293b !important;
+}
+
+.bg-slate-900\/90 {
+    background-color: rgba(15, 23, 42, 0.9) !important;
+}
+
+.text-slate-100 {
+    color: #f1f5f9 !important;
+}
+
+.text-slate-300 {
+    color: #cbd5e1 !important;
+}
+
+.text-slate-400 {
+    color: #94a3b8 !important;
+}
+
+.text-emerald-400 {
+    color: #34d399 !important;
+}
+
+.bg-emerald-500 {
+    background-color: #10b981 !important;
+}
+
+.bg-emerald-600 {
+    background-color: #059669 !important;
+}
+
+.bg-emerald-950 {
+    background-color: #064e3b !important;
+}
+
+.border-emerald-500\/40 {
+    border-color: rgba(16, 185, 129, 0.4) !important;
+}
+
+.border-slate-800 {
+    border-color: #1e293b !important;
+}
+
+.border-slate-800\/80 {
+    border-color: rgba(30, 41, 59, 0.8) !important;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: #020617;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #1e293b;
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #10b981;
+}

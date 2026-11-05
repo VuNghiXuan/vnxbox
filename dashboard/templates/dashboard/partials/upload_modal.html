@@ -1,0 +1,66 @@
+<!-- Modal Thêm mới / Upload Tri thức -->
+<div x-show="showUploadModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm"
+    x-transition.opacity style="display: none;">
+
+    <div @click.away="showUploadModal = false"
+        class="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-lg p-6 shadow-2xl space-y-5">
+
+        <!-- Header Modal -->
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="text-base font-bold text-emerald-400 flex items-center gap-2">
+                <span>📁 Nạp Tri Thức & Tài Liệu Doanh Nghiệp</span>
+            </h3>
+            <button @click="showUploadModal = false"
+                class="text-slate-400 hover:text-white text-lg font-bold">&times;</button>
+        </div>
+
+        <!-- Form Nội Dung -->
+        <div class="space-y-4">
+            <!-- Phân hệ nghiệp vụ -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Phân hệ nghiệp vụ / Lĩnh
+                    vực</label>
+                <input type="text" x-model="newDomain" placeholder="Ví dụ: Thu đổi vàng, Kế toán kho, Quy định chung..."
+                    class="w-full bg-slate-950 border border-slate-700 rounded-lg px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500 transition">
+            </div>
+
+            <!-- Tải lên tệp tin (Hỗ trợ đa định dạng: PDF, Word, Excel, CSV, TXT, MD, Ảnh) -->
+            <div>
+                <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Tải lên tệp tài liệu (PDF, DOCX,
+                    XLSX, CSV, TXT, MD, Ảnh)</label>
+                <input type="file" @change="handleFileSelect($event)"
+                    accept=".pdf,.docx,.xlsx,.csv,.txt,.md,.png,.jpg,.jpeg,.webp"
+                    class="w-full text-xs text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-emerald-600 file:text-white hover:file:bg-emerald-500 cursor-pointer bg-slate-950 border border-slate-700 rounded-lg transition">
+                <p class="text-[11px] text-slate-500 mt-1" x-show="selectedFile">Đã chọn file: <span
+                        class="text-emerald-400 font-medium" x-text="selectedFile?.name"></span></p>
+            </div>
+
+            <div class="flex items-center gap-4 my-2">
+                <div class="flex-1 border-t border-slate-800"></div>
+                <span class="text-[11px] font-bold text-slate-500 uppercase">Hoặc dán văn bản thô</span>
+                <div class="flex-1 border-t border-slate-800"></div>
+            </div>
+
+            <!-- Dán văn bản thô -->
+            <div>
+                <textarea x-model="newRawText" rows="4"
+                    placeholder="Dán nội dung quy định hoặc văn bản thô vào đây nếu không có file..."
+                    class="w-full bg-slate-950 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-emerald-500 font-mono transition"></textarea>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="flex justify-end gap-3 pt-3 border-t border-slate-800">
+            <button @click="showUploadModal = false; selectedFile = null; newRawText = '';"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-semibold rounded-lg transition">
+                Hủy bỏ
+            </button>
+            <button @click="submitIngest()" :disabled="ingesting"
+                class="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-2">
+                <span x-show="ingesting" class="animate-spin text-xs">⏳</span>
+                <span x-text="ingesting ? 'Đang bóc tách bằng AI...' : 'Bóc tách bằng AI'"></span>
+            </button>
+        </div>
+
+    </div>
+</div>
