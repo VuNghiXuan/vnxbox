@@ -1,7 +1,8 @@
+# File path: vnxbox/urls.py (hoặc settings.ROOT_URLCONF)
+# Chú thích: Tổng hợp Root URLs điều hướng toàn bộ hệ thống vnxBox Enterprise.
+
 from django.contrib import admin
 from django.urls import path, include
-from django.http import HttpResponse
-
 
 urlpatterns = [
     path('', include('dashboard.urls')),

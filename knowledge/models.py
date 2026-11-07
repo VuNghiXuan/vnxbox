@@ -1,3 +1,7 @@
+# File path: knowledge/models.py
+# Chú thích: Định nghĩa cơ sở dữ liệu ORM (Django Models) cho hệ thống vnxBox Enterprise.
+# Bao gồm: KnowledgeChapter, KnowledgeFAQ, KnowledgeHistory (Versioning), ChatSession & ChatMessage (Memory).
+
 from django.db import models
 import uuid
 

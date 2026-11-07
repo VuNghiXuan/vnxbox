@@ -1,13 +1,26 @@
+# File path: knowledge/file_parsers.py
+# Chú thích: Module trích xuất & Phân loại Cấu trúc Tri thức Nâng cao (Structured Ingestion)
+# Hỗ trợ: Excel (Sheet-Aware), CSV, DOCX, PDF (Text & OCR), Images (EasyOCR), Text/MD.
+# Đã tích hợp Hardware Auto-Profiling từ ai_services để tự động điều chỉnh tải xử lý.
+
 import io
 import csv
 import json
+import logging
 from pypdf import PdfReader
 from PIL import Image
+
+from .ai_services import query_local_llm
+
+logger = logging.getLogger(__name__)
 
 # Global EasyOCR Reader (chạy CPU an toàn)
 _ocr_reader = None
 
 def get_ocr_reader():
+    """
+    Khởi tạo Lazy Loading cho EasyOCR Reader trên CPU để tránh chiếm dụng bộ nhớ khi chưa cần dùng.
+    """
     global _ocr_reader
     if _ocr_reader is None:
         import easyocr
@@ -15,17 +28,21 @@ def get_ocr_reader():
     return _ocr_reader
 
 
-def call_local_llm_for_taxonomy_and_faqs(raw_text, file_name, sheet_name=None):
+def call_local_llm_for_taxonomy_and_faqs(raw_text: str, file_name: str, sheet_name: str = None) -> dict:
     """
-    Gọi LLM Local (Ollama - qwen2.5) để tự động phân loại Taxonomy
+    Gọi LLM Local (thông qua ai_services) để tự động phân loại Taxonomy
     (domain_name, sub_domain) và sinh tập câu hỏi định tuyến (Intent FAQs).
+    Tận dụng Hardware Auto-Profiling chống timeout.
     """
-    import urllib.request
-    
     context_info = f"File: {file_name}" + (f" | Sheet: {sheet_name}" if sheet_name else "")
+    
+    system_instruction = (
+        "Bạn là chuyên gia phân loại dữ liệu doanh nghiệp B2B (Auto-Taxonomy Engine). "
+        "Trả về kết quả JSON thuần túy, KHÔNG có markdown ```json bên ngoài."
+    )
+    
     prompt = f"""
-Bạn là chuyên gia phân loại dữ liệu doanh nghiệp B2B (Auto-Taxonomy Engine).
-Dựa vào nội dung tài liệu dưới đây, hãy phân tích và trả về định dạng JSON thuần túy (không chứa markdown codeblock):
+Dựa vào nội dung tài liệu dưới đây, hãy phân tích và trả về định dạng JSON thuần túy:
 
 1. domain_name: Lĩnh vực nghiệp vụ lớn (VD: "Nghiệp vụ Vàng bạc", "Kế toán - Tài chính", "Sản xuất - Định mức").
 2. sub_domain: Nghiệp vụ chi tiết (VD: "Thu đổi vàng", "Tính giá vốn", "Bảo trì thiết bị").
@@ -35,7 +52,9 @@ Dựa vào nội dung tài liệu dưới đây, hãy phân tích và trả về
 
 Thông tin nguồn: {context_info}
 Nội dung tài liệu:
+---
 {raw_text[:3000]}
+---
 
 CẤU TRÚC JSON BẮT BUỘC TRẢ VỀ:
 {{
@@ -47,49 +66,43 @@ CẤU TRÚC JSON BẮT BUỘC TRẢ VỀ:
 }}
 """
     try:
-        req = urllib.request.Request(
-            "http://localhost:11434/api/generate",
-            data=json.dumps({
-                "model": "qwen2.5",
-                "prompt": prompt,
-                "stream": False,
-                "format": "json"
-            }).encode('utf-8'),
-            headers={"Content-Type": "application/json"}
-        )
-        with urllib.request.urlopen(req, timeout=15) as response:
-            res_data = json.loads(response.read().decode('utf-8'))
-            parsed_json = json.loads(res_data.get("response", "{}"))
-            return parsed_json
+        res = query_local_llm(prompt, system_prompt=system_instruction, task_type="general")
+        if res.get("success"):
+            cleaned_text = res.get("response", "").replace("```json", "").replace("```", "").strip()
+            return json.loads(cleaned_text)
     except Exception as e:
-        # Fallback an toàn nếu LLM chưa sẵn sàng
-        return {
-            "domain_name": "Nghiệp vụ Tổng hợp",
-            "sub_domain": sheet_name if sheet_name else "Tri thức chung",
-            "title": f"Tài liệu từ {file_name}",
-            "summary": "Tài liệu được tải lên tự động",
-            "intent_faqs": [f"Nội dung trong file {file_name} quy định gì?"]
-        }
+        logger.warning(f"Lỗi khi gọi Local LLM Auto-Taxonomy ({file_name}): {str(e)}")
+
+    # Fallback dự phòng an toàn nếu LLM gặp sự cố
+    return {
+        "domain_name": "Nghiệp vụ Tổng hợp",
+        "sub_domain": sheet_name if sheet_name else "Tri thức chung",
+        "title": f"Tài liệu từ {file_name}",
+        "summary": "Tài liệu được tải lên tự động",
+        "intent_faqs": [f"Nội dung trong file {file_name} quy định gì?"]
+    }
 
 
-def format_context_header(domain_name, sub_domain, file_name, sheet_name, location_code, content):
+def format_context_header(domain_name: str, sub_domain: str, file_name: str, sheet_name: str, location_code: str, content: str) -> str:
     """
-    Bơm khối Context Header chuẩn mực vào đầu mỗi đoạn tri thức.
+    Bơm khối Context Header chuẩn mực vào đầu mỗi đoạn tri thức chống mất ngữ cảnh khi Vectorize.
     """
-    header = f"""==================================================
-CONTEXT HEADER:
-- DOMAIN: {domain_name}
-- SUB_DOMAIN: {sub_domain}
-- SOURCE_FILE: {file_name}"""
+    header = (
+        "==================================================\n"
+        "CONTEXT HEADER:\n"
+        f"- DOMAIN: {domain_name}\n"
+        f"- SUB_DOMAIN: {sub_domain if sub_domain else 'Chung'}\n"
+        f"- SOURCE_FILE: {file_name}"
+    )
     if sheet_name:
         header += f" | SHEET: {sheet_name}"
-    header += f"\n- LOCATION: {location_code}\n==================================================\n"
+    header += f"\n- LOCATION: {location_code}\n==================================================\n\n"
     return header + content
 
 
-def parse_uploaded_file(file_obj):
+def parse_uploaded_file(file_obj) -> dict:
     """
-    Module trích xuất & Phân loại Cấu trúc Tri thức Nâng cao (Structured Ingestion)
+    Module trích xuất & Phân loại Cấu trúc Tri thức Nâng cao (Structured Ingestion).
     Trả về danh sách các Chapters đã sẵn sàng để lưu vào KnowledgeChapter & KnowledgeFAQ.
     """
     file_name = file_obj.name
@@ -184,16 +197,12 @@ def parse_uploaded_file(file_obj):
             })
 
         # ==========================================
-        # 3. XỬ LÝ FILE WORD (.docx) & MARKDOWN/TEXT
+        # 3. XỬ LÝ FILE WORD (.docx)
         # ==========================================
         elif file_name_lower.endswith('.docx'):
             from docx import Document
             doc = Document(file_obj)
-            blocks = []
-
-            for para in doc.paragraphs:
-                if para.text.strip():
-                    blocks.append(para.text.strip())
+            blocks = [para.text.strip() for para in doc.paragraphs if para.text.strip()]
 
             raw_text = "\n\n".join(blocks)
             ai_meta = call_local_llm_for_taxonomy_and_faqs(raw_text, file_name)
@@ -239,7 +248,8 @@ def parse_uploaded_file(file_obj):
                             res = reader_ocr.readtext(image, detail=0)
                             if res:
                                 ocr_texts.append(" ".join(res))
-                        except Exception:
+                        except Exception as ocr_err:
+                            logger.debug(f"Lỗi OCR ảnh trong PDF trang {i+1}: {str(ocr_err)}")
                             continue
                     if ocr_texts:
                         page_blocks.append(f"[Trang {i+1} (OCR Scan)]\n" + "\n".join(ocr_texts))
@@ -345,4 +355,5 @@ def parse_uploaded_file(file_obj):
         return {"success": True, "chapters": parsed_chapters}
 
     except Exception as e:
+        logger.error(f"Lỗi bóc tách file ({file_name}): {str(e)}", exc_info=True)
         return {"success": False, "error": f"Lỗi bóc tách file ({file_name}): {str(e)}"}

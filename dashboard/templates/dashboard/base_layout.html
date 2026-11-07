@@ -1,3 +1,7 @@
+<!-- File path: templates/dashboard/base_layout.html -->
+<!-- Chú thích: Giao diện Layout trung tâm chính thức của vnxBox Enterprise v2.6, 
+     tích hợp đầy đủ Logo động Vũ Nghi Xuân, Cổng Chat Chính và Kho Quản Trị Tri Thức. -->
+
 {% load static %}
 <!DOCTYPE html>
 <html lang="vi" class="dark">
@@ -7,78 +11,384 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>vnxBox - Universal Enterprise Local AI Platform</title>
 
-    <!-- Nhúng file Tailwind CSS cục bộ đầy đủ cấu trúc & màu sắc -->
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- Thẻ khai báo Favicon -->
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 rx=%2220%22 fill=%22%23065f46%22/><text x=%2250%22 y=%2265%22 font-size=%2250%22 font-weight=%22bold%22 fill=%22%23ffd700%22 text-anchor=%22middle%22 font-family=%22sans-serif%22>vX</text></svg>">
 
-    <!-- Nạp script logic dashboard.js -->
-    <script src="{% static 'dashboard/js/dashboard.js' %}"></script>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Alpine.js Core -->
+    <!-- Nạp tệp logic JavaScript riêng biệt (kèm chống cache động) -->
+    <script defer src="{% static 'dashboard/js/dashboard.js' %}?v={% now 'U' %}"></script>
+
+    <!-- Nạp Alpine.js Core sau cùng -->
     <script defer src="{% static 'dashboard/js/alpine.min.js' %}"></script>
-
-
 </head>
 
 <body
-    class="bg-slate-950 text-slate-100 h-screen flex flex-col overflow-hidden font-sans antialiased selection:bg-emerald-500 selection:text-white"
+    class="h-screen w-screen flex bg-slate-950 text-slate-100 font-sans overflow-hidden selection:bg-emerald-500 selection:text-white"
     x-data="knowledgeApp()">
 
     {% csrf_token %}
 
-    <!-- ================= HEADER BAR ================= -->
-    <header
-        class="bg-slate-900 border-b border-slate-800 px-6 py-2.5 flex justify-between items-center shrink-0 z-40 shadow-xl">
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2.5">
-                <div class="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
-                <h1 class="font-extrabold text-lg text-emerald-400 tracking-tight">vnxBox Enterprise</h1>
-            </div>
-            <div class="h-4 w-[1px] bg-slate-800"></div>
-            <span
-                class="text-[11px] px-2.5 py-0.5 bg-slate-950 border border-slate-800 text-emerald-400 rounded-full font-mono font-medium">
-                100% Offline & Secure Sandbox
-            </span>
-        </div>
-
-        <!-- Tab Switcher -->
-        <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800">
+    <!-- ================= SIDEBAR NAVIGATION / CHUYỂN TAB ================= -->
+    <div class="w-20 bg-slate-950 border-r border-slate-800 flex flex-col items-center py-6 gap-6 z-10 shrink-0">
+        <div
+            class="w-10 h-10 rounded-xl bg-emerald-600 flex items-center justify-center font-black text-white text-lg shadow-lg shadow-emerald-900/40">
+            vX</div>
+        <div class="flex flex-col gap-3 w-full px-3">
+            <!-- Nút chuyển sang Cổng Chat Chính -->
             <button @click="currentView = 'chat'"
-                :class="currentView === 'chat' ? 'bg-emerald-600 text-white shadow font-bold' : 'text-slate-400 hover:text-white font-medium'"
-                class="px-5 py-1.5 rounded-lg text-xs transition flex items-center gap-2">
-                <span>💬 Cổng Chat Thông Minh</span>
+                :class="currentView === 'chat' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30' : 'text-slate-400 hover:bg-slate-900 hover:text-white'"
+                class="w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition text-[10px] font-medium"
+                title="Cổng Chat Thông Minh">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z">
+                    </path>
+                </svg>
+                <span>Chat</span>
             </button>
+            <!-- Nút chuyển sang Quản Trị Kho Tri Thức -->
             <button @click="currentView = 'config'"
-                :class="currentView === 'config' ? 'bg-emerald-600 text-white shadow font-bold' : 'text-slate-400 hover:text-white font-medium'"
-                class="px-5 py-1.5 rounded-lg text-xs transition flex items-center gap-2">
-                <span>⚙️ Quản Trị Kho Tri Thức</span>
+                :class="currentView === 'config' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30' : 'text-slate-400 hover:bg-slate-900 hover:text-white'"
+                class="w-full aspect-square rounded-xl flex flex-col items-center justify-center gap-1 transition text-[10px] font-medium"
+                title="Quản Trị Kho Tri Thức">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10">
+                    </path>
+                </svg>
+                <span>Quản trị</span>
             </button>
         </div>
+    </div>
 
-        <div class="flex items-center gap-3">
-            <span class="text-xs text-slate-400 font-mono">Build 2026.11.04</span>
-            <div
-                class="w-7 h-7 rounded-full bg-emerald-950 border border-emerald-500/40 flex items-center justify-center text-emerald-400 font-bold text-xs">
-                AI
+    <!-- ================= MAIN CONTENT AREA ================= -->
+    <div class="flex-1 flex flex-col h-full overflow-hidden relative">
+
+        <!-- TOPBAR HEADER (Đã bố trí Logo động & Badge hiệu ứng chuyên nghiệp) -->
+        <header
+            class="h-16 border-b border-slate-800 bg-slate-950/90 backdrop-blur px-6 flex justify-between items-center z-10 shrink-0 shadow-lg">
+
+            <!-- Khu vực bên trái: Logo động Vũ Nghi Xuân + Tiêu đề + Huy hiệu Offline -->
+            <div class="flex items-center gap-4">
+                <!-- Logo động GIF -->
+                <div class="flex items-center">
+                    <img src="{% static 'dashboard/vuxuan_animated_logo.gif' %}" alt="Vũ Nghi Xuân Logo"
+                        class="h-9 w-auto rounded-lg border border-emerald-500/40 shadow-md object-cover">
+                </div>
+
+                <div class="h-5 w-[1px] bg-slate-800"></div>
+
+                <!-- Tiêu đề trang động theo Tab -->
+                <div class="flex items-center gap-3">
+                    <h1 class="text-sm font-bold text-white tracking-wide"
+                        x-text="currentView === 'chat' ? 'Cổng Chat Thông Minh & Tra Cứu Quy Định' : 'Quản Trị Kho Tri Thức & Biên Soạn Tài Liệu'">
+                    </h1>
+
+                    <!-- Huy hiệu trạng thái nhấp nháy phát sáng -->
+                    <div
+                        class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-emerald-950/80 border border-emerald-500/40 rounded-full shadow-inner">
+                        <span class="flex h-2 w-2 relative">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-[10px] font-mono font-bold text-emerald-400 tracking-wide uppercase">
+                            100% Offline & Secure Sandbox
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Khu vực bên phải: Phiên bản hệ thống -->
+            <div class="flex items-center gap-3">
+                <span
+                    class="text-xs text-slate-400 font-mono bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg">
+                    vnxBox Enterprise v2.6
+                </span>
+            </div>
+        </header>
+
+        <!-- ================= VIEW 1: CỔNG CHAT CHÍNH (TRANG CHÍNH TRA CỨU) ================= -->
+        <div class="flex-1 flex flex-col bg-slate-900 overflow-hidden min-h-0"
+            :style="currentView === 'chat' ? 'display: flex;' : 'display: none;'">
+
+            <!-- Khung chứa tin nhắn có cuộn dọc độc lập -->
+            <div x-ref="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 min-h-0 relative">
+
+                <!-- Vòng lặp tin nhắn -->
+                <template x-for="msg in messages" :key="msg.id || Math.random()">
+                    <div :class="msg.sender === 'user' ? 'flex justify-end' : 'flex items-start gap-3'">
+                        <!-- Avatar AI -->
+                        <template x-if="msg.sender === 'ai'">
+                            <div
+                                class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shrink-0">
+                                AI</div>
+                        </template>
+
+                        <!-- Nội dung tin nhắn -->
+                        <div
+                            :class="msg.sender === 'user' ? 'bg-emerald-600 text-white rounded-2xl rounded-tr-sm px-5 py-3 max-w-xl text-sm shadow' : 'bg-slate-950 border border-slate-800 text-slate-200 rounded-2xl rounded-tl-sm px-5 py-4 max-w-3xl text-sm shadow-md space-y-3'">
+                            <div class="whitespace-pre-wrap leading-relaxed font-mono text-xs" x-text="msg.text">
+                            </div>
+
+                            <!-- Trích dẫn tài liệu (Citations) - Bấm vào sẽ nhảy sang tab quản trị đúng điều khoản -->
+                            <template x-if="msg.citations && msg.citations.length > 0">
+                                <div class="mt-3 pt-3 border-t border-slate-800/80 space-y-1.5">
+                                    <div class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">📚
+                                        Nguồn trích dẫn nội bộ:</div>
+                                    <div class="flex flex-wrap gap-1.5">
+                                        <template x-for="cite in msg.citations">
+                                            <div @click="jumpToEdit(cite.chapter_id)"
+                                                class="bg-slate-900 hover:bg-slate-800 px-2.5 py-1 rounded border border-slate-700 text-[11px] text-slate-300 flex items-center gap-1.5 transition cursor-pointer"
+                                                title="Bấm để xem chi tiết trong kho tri thức">
+                                                <span class="text-emerald-400 font-bold"
+                                                    x-text="cite.domain_name"></span>
+                                                <span class="text-slate-400" x-text="'> ' + cite.title"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- HIỆU ỨNG ĐỘNG ĐANG XỬ LÝ (THINKING STEPS) -->
+                <template x-if="isThinking">
+                    <div class="flex items-start gap-3 my-3">
+                        <div
+                            class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shrink-0">
+                            AI</div>
+                        <div
+                            class="bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 max-w-xl shadow-md text-xs space-y-3">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-2 w-2 relative">
+                                    <span
+                                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                                </span>
+                                <span class="text-emerald-400 font-semibold uppercase tracking-wider">Hệ thống đang
+                                    xử lý thông tin</span>
+                            </div>
+                            <div class="text-slate-300 font-mono flex items-center gap-2">
+                                <span class="text-teal-400">▶</span>
+                                <span x-text="thinkingSteps[currentStepIndex]"></span>
+                            </div>
+                            <div class="w-full bg-slate-900 rounded-full h-1 overflow-hidden">
+                                <div class="bg-emerald-500 h-full transition-all duration-500 rounded-full"
+                                    :style="`width: ${((currentStepIndex + 1) / thinkingSteps.length) * 100}%`">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </template>
+
+                <!-- THẺ NEO DƯỚI CÙNG -->
+                <div x-ref="bottomAnchor"></div>
+            </div>
+
+            <!-- Ô nhập câu hỏi Chat (Cố định ở đáy) -->
+            <div class="p-4 bg-slate-950 border-t border-slate-800 shrink-0">
+                <form @submit.prevent="sendMessage()" class="max-w-4xl mx-auto flex gap-3">
+                    <input type="text" x-model="question"
+                        placeholder="Nhập câu hỏi quy định, tính toán tài chính, đổi vàng..."
+                        class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono">
+                    <button type="submit" :disabled="isThinking"
+                        class="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
+                        <span>Gửi yêu cầu</span>
+                    </button>
+                </form>
             </div>
         </div>
-    </header>
 
-    <!-- ================= MAIN VIEW ================= -->
-    <main class="flex-1 flex overflow-hidden relative">
-        <div x-show="currentView === 'chat'" class="flex-1 flex flex-col h-full w-full">
-            {% include "dashboard/chat_workspace.html" %}
-        </div>
-        <div x-show="currentView === 'config'" class="flex-1 flex h-full w-full overflow-hidden">
-            {% include "dashboard/admin_dashboard.html" %}
-        </div>
-    </main>
+        <!-- ================= VIEW 2: QUẢN TRỊ KHO TRI THỨC (Master-Detail) ================= -->
+        <div x-show="currentView === 'config'" class="flex-1 flex overflow-hidden bg-slate-950 min-h-0"
+            x-data="{ searchTerm: '' }">
 
+            <!-- SIDEBAR TREE (Bên trái: Tìm kiếm, lọc và danh sách Chapters) -->
+            <div class="w-1/3 border-r border-slate-800 flex flex-col bg-slate-950 min-h-0">
+                <div class="p-4 border-b border-slate-800 flex flex-col gap-3 shrink-0">
+                    <div class="flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <h2 class="font-bold text-sm text-emerald-400">Kho Tri Thức & Tài Liệu</h2>
+                            <span
+                                class="text-[10px] px-2 py-0.5 bg-slate-900 border border-slate-800 rounded-full text-slate-400 font-mono"
+                                x-text="filteredChapters.length + ' mục'"></span>
+                        </div>
+                        <button @click="showUploadModal = true"
+                            class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-xl shadow transition flex items-center gap-1">
+                            <span>+ Nạp file mới</span>
+                        </button>
+                    </div>
+
+                    <!-- Ô TÌM KIẾM NHANH -->
+                    <div class="relative">
+                        <span
+                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-500">🔍</span>
+                        <input type="text" x-model="searchTerm" placeholder="Tìm tiêu đề, nội dung tài liệu..."
+                            class="w-full pl-9 pr-4 py-2 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono">
+                    </div>
+
+                    <!-- Bộ lọc -->
+                    <div class="flex flex-col gap-2 text-xs">
+                        <div class="flex gap-1.5">
+                            <button @click="filterStatus = ''"
+                                :class="filterStatus === '' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-900 text-slate-400 border border-slate-800'"
+                                class="px-2.5 py-1 rounded-lg transition">Tất cả</button>
+                            <button @click="filterStatus = 'AUTO_APPROVED'"
+                                :class="filterStatus === 'AUTO_APPROVED' ? 'bg-emerald-600 text-white font-bold' : 'bg-slate-900 text-slate-400 border border-slate-800'"
+                                class="px-2.5 py-1 rounded-lg transition">Tự động duyệt</button>
+                            <button @click="filterStatus = 'NEEDS_REVIEW'"
+                                :class="filterStatus === 'NEEDS_REVIEW' ? 'bg-amber-600 text-white font-bold' : 'bg-slate-900 text-slate-400 border border-slate-800'"
+                                class="px-2.5 py-1 rounded-lg transition">Cần kiểm tra</button>
+                        </div>
+                        <select x-model="filterDomain"
+                            class="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 focus:outline-none focus:border-emerald-500">
+                            <option value="">📂 Tất cả Lĩnh vực (Domains)</option>
+                            <template x-for="d in availableDomains">
+                                <option :value="d.domain_name" x-text="d.domain_name"></option>
+                            </template>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Danh sách items -->
+                <div class="flex-1 overflow-y-auto divide-y divide-slate-800/40 min-h-0">
+                    <template
+                        x-for="item in filteredChapters.filter(c => !searchTerm || c.title.toLowerCase().includes(searchTerm.toLowerCase()) || (c.source_file && c.source_file.toLowerCase().includes(searchTerm.toLowerCase())) || c.content.toLowerCase().includes(searchTerm.toLowerCase()))"
+                        :key="item.id">
+                        <div @click="selectedChapter = item"
+                            :class="selectedChapter && selectedChapter.id === item.id ? 'bg-slate-900 border-l-4 border-emerald-500 shadow' : 'hover:bg-slate-900/40'"
+                            class="p-4 cursor-pointer transition flex flex-col gap-1">
+                            <div class="flex justify-between items-start">
+                                <span
+                                    class="text-[10px] font-semibold px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 border border-emerald-800"
+                                    x-text="item.domain_name"></span>
+                                <span class="text-[10px] px-2 py-0.5 rounded-full font-bold uppercase"
+                                    :class="item.status === 'AUTO_APPROVED' ? 'bg-emerald-950 text-emerald-400 border border-emerald-800' : 'bg-amber-950 text-amber-400 border border-amber-800'"
+                                    x-text="item.status"></span>
+                            </div>
+                            <h3 class="font-semibold text-xs text-slate-100 line-clamp-2" x-text="item.title"></h3>
+                            <div class="flex justify-between items-center text-[10px] text-slate-400 font-mono mt-1">
+                                <span x-text="item.source_file || 'Văn bản thô'"></span>
+                                <span x-text="item.chapter_code || ''"></span>
+                            </div>
+                        </div>
+                    </template>
+                    <template x-if="filteredChapters.length === 0">
+                        <div class="p-6 text-center text-slate-500 text-xs font-mono">Không tìm thấy tài liệu nào.</div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- DETAIL CONFIG VIEW (Bên phải: Chi tiết & Chỉnh sửa) -->
+            <div class="flex-1 flex flex-col bg-slate-900 overflow-y-auto p-6 min-h-0">
+                <template x-if="!selectedChapter">
+                    <div class="flex-1 flex flex-col items-center justify-center text-slate-500 gap-2">
+                        <span class="text-3xl">📂</span>
+                        <p class="text-xs font-mono">Chọn một phân đoạn tri thức ở danh sách bên trái để xem và chỉnh
+                            sửa.</p>
+                    </div>
+                </template>
+
+                <template x-if="selectedChapter">
+                    <div class="max-w-4xl mx-auto w-full space-y-6">
+                        <div class="flex justify-between items-start border-b border-slate-800 pb-4">
+                            <div class="space-y-1 flex-1 mr-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="text-xs text-emerald-400 font-semibold uppercase font-mono"
+                                        x-text="selectedChapter.domain_name"></span>
+                                    <span class="text-xs text-slate-400 font-mono"
+                                        x-text="selectedChapter.sub_domain ? ' > ' + selectedChapter.sub_domain : ''"></span>
+                                </div>
+                                <input type="text" x-model="selectedChapter.title"
+                                    class="text-xl font-bold text-white bg-slate-950 border border-slate-800 rounded-lg px-3 py-1.5 w-full focus:outline-none focus:border-emerald-500">
+                            </div>
+                            <div class="flex gap-2 shrink-0">
+                                <button @click="showRecompileModal = true"
+                                    class="px-3 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow transition flex items-center gap-1.5">
+                                    <span>🤖 AI Biên Soạn Lại</span>
+                                </button>
+                                <button @click="updateStatus('APPROVED')"
+                                    class="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold rounded-lg shadow transition">
+                                    ✅ Phê Duyệt
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Thông tin nguồn -->
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3 text-xs">
+                            <h4 class="font-bold text-emerald-400 uppercase tracking-wider">📁 Thông tin định vị & Nguồn
+                                gốc</h4>
+                            <div class="grid grid-cols-3 gap-3">
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-mono mb-1">Nguồn File
+                                        gốc</label>
+                                    <input type="text" x-model="selectedChapter.source_file" disabled
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-400 font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-mono mb-1">Mã Chương</label>
+                                    <input type="text" x-model="selectedChapter.chapter_code"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-emerald-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] text-slate-400 font-mono mb-1">Mã Điều /
+                                        Khoản</label>
+                                    <input type="text" x-model="selectedChapter.article_code"
+                                        class="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-emerald-500">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Tóm tắt -->
+                        <div class="space-y-2">
+                            <label class="text-xs font-bold text-slate-400 uppercase font-mono">Tóm tắt ngắn gọn</label>
+                            <textarea x-model="selectedChapter.summary" rows="2"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-300 focus:outline-none focus:border-emerald-500 font-mono"></textarea>
+                        </div>
+
+                        <!-- FAQ Variations -->
+                        <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-2 text-xs">
+                            <h4 class="font-bold text-teal-400 uppercase tracking-wider">❓ Câu hỏi mẫu định tuyến ý định
+                                (Intent Routing FAQs)</h4>
+                            <div class="space-y-1.5">
+                                <template x-for="faq in selectedChapter.faq_variations || []">
+                                    <div class="p-2 bg-slate-900 rounded border border-slate-800 text-slate-200 font-mono"
+                                        x-text="'- ' + faq.question_variation"></div>
+                                </template>
+                                <template
+                                    x-if="!selectedChapter.faq_variations || selectedChapter.faq_variations.length === 0">
+                                    <p class="text-slate-500 italic">Chưa có câu hỏi FAQ nào.</p>
+                                </template>
+                            </div>
+                        </div>
+
+                        <!-- Nội dung Markdown kèm Nút Copy Bảng -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-center">
+                                <label class="text-xs font-bold text-slate-400 uppercase font-mono">Nội dung chi tiết &
+                                    Bảng biểu (Markdown)</label>
+                                <button @click="copyTableContent(selectedChapter.content)"
+                                    class="text-[11px] text-emerald-400 hover:text-emerald-300 font-mono flex items-center gap-1 bg-emerald-950/50 px-2.5 py-1 rounded border border-emerald-800 transition">
+                                    <span>📋 Copy Nội Dung Bảng</span>
+                                </button>
+                            </div>
+                            <textarea x-model="selectedChapter.content" rows="14"
+                                class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs text-slate-200 font-mono leading-relaxed focus:outline-none focus:border-emerald-500 shadow-inner"></textarea>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals & Widgets Phụ Trợ -->
     {% include "dashboard/partials/upload_modal.html" %}
     {% include "dashboard/partials/recompile_modal.html" %}
-
-    <div x-show="currentView === 'config'">
-        {% include "dashboard/partials/chat_widget.html" %}
-    </div>
 
 </body>
 

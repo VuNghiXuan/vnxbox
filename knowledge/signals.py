@@ -1,10 +1,23 @@
+# File path: knowledge/signals.py
+# Chú thích: Django Signals tự động xử lý Auto Re-Indexing & Vector Cleanup 
+# mỗi khi KnowledgeChapter được Tạo mới, Cập nhật (Recompile) hoặc Xóa khỏi cơ sở dữ liệu.
+
 import logging
+import chromadb
 from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from .models import KnowledgeChapter
 from .chunker import DocumentChunker
 
 logger = logging.getLogger(__name__)
+
+# Khởi tạo ChromaDB Persistent Client chạy offline trong thư mục local
+CHROMA_DB_PATH = "./chroma_db"
+
+def get_chroma_collection():
+    client = chromadb.PersistentClient(path=CHROMA_DB_PATH)
+    return client.get_or_create_collection("vnxbox_knowledge")
+
 
 @receiver(post_save, sender=KnowledgeChapter)
 def handle_chapter_save_signal(sender, instance, created, **kwargs):
@@ -19,44 +32,42 @@ def handle_chapter_save_signal(sender, instance, created, **kwargs):
     
     try:
         # 1. Khởi tạo Chunker để băm nhỏ dữ liệu chuẩn xác theo cấu trúc đa tầng
-        chunker = DocumentChunker(max_child_words=400, overlap_words=50)
+        chunker = DocumentChunker()
         chunk_data = chunker.process_document(
             parent_id=str(instance.id),
             title=instance.title,
             domain_name=instance.domain_name,
             sub_domain=instance.sub_domain or "Chung",
             source_file=instance.source_file or "N/A",
-            sheet_name=instance.sheet_name,
-            location_code=f"{instance.chapter_code or ''} > {instance.article_code or ''}".strip(" > "),
+            sheet_name=instance.sheet_name or "",
+            location_code=f"{instance.chapter_code or ''} {instance.article_code or ''}".strip(" > "),
             full_content=instance.content
         )
 
-        # 2. --- TÍCH HỢP THỰC TẾ VECTOR DB (CHROMA_DB) ---
-        # import chromadb
-        # client = chromadb.PersistentClient(path="./chroma_db")
-        # collection = client.get_or_create_collection("vnxbox_knowledge")
+        # 2. Đồng bộ Vector DB (ChromaDB)
+        collection = get_chroma_collection()
         
         # Xóa vector cũ theo chapter_id trước khi insert mới để tránh trùng lặp
-        # collection.delete(where={"chapter_id": str(instance.id)})
+        collection.delete(where={"chapter_id": str(instance.id)})
         
         # Đẩy các child_chunks mới kèm metadata đầy đủ vào Vector DB
-        # for child in chunk_data["child_chunks"]:
-        #     collection.add(
-        #         documents=[child["content"]],
-        #         metadatas=[{
-        #             "chapter_id": str(instance.id),
-        #             "domain_name": instance.domain_name,
-        #             "sub_domain": instance.sub_domain or "",
-        #             "source_file": instance.source_file or "",
-        #             "sheet_name": instance.sheet_name or ""
-        #         }],
-        #         ids=[f"chap_{instance.id}_chunk_{child['chunk_index']}"]
-        #     )
+        for child in chunk_data["child_chunks"]:
+            collection.add(
+                documents=[child["content"]],
+                metadatas=[{
+                    "chapter_id": str(instance.id),
+                    "domain_name": instance.domain_name,
+                    "sub_domain": instance.sub_domain or "",
+                    "source_file": instance.source_file or "",
+                    "sheet_name": instance.sheet_name or ""
+                }],
+                ids=[f"chap_{instance.id}_chunk_{child['chunk_index']}"]
+            )
         
         logger.info(f"[Auto Re-Index Signal] Thành công đồng bộ Vector (Tổng số chunks: {chunk_data['total_children']}) cho Chapter ID: {instance.id}")
         
     except Exception as e:
-        logger.error(f"[Auto Re-Index Signal Error] Lỗi Re-index cho Chapter ID {instance.id}: {str(e)}")
+        logger.error(f"[Auto Re-Index Signal Error] Lỗi Re-index cho Chapter ID {instance.id}: {str(e)}", exc_info=True)
 
 
 @receiver(pre_delete, sender=KnowledgeChapter)
@@ -68,12 +79,9 @@ def handle_chapter_delete_signal(sender, instance, **kwargs):
     logger.info(f"[Auto Re-Index Signal] Phát hiện xóa Chapter ID: {instance.id} - '{instance.title}'")
     
     try:
-        # --- XÓA VECTOR TRONG CHROMA_DB ---
-        # import chromadb
-        # client = chromadb.PersistentClient(path="./chroma_db")
-        # collection = client.get_or_create_collection("vnxbox_knowledge")
-        # collection.delete(where={"chapter_id": str(instance.id)})
+        collection = get_chroma_collection()
+        collection.delete(where={"chapter_id": str(instance.id)})
         
         logger.info(f"[Auto Re-Index Signal] Đã dọn dẹp Vector thành công cho Chapter ID: {instance.id}")
     except Exception as e:
-        logger.error(f"[Auto Re-Index Signal Error] Lỗi xóa vector cho Chapter ID {instance.id}: {str(e)}")
+        logger.error(f"[Auto Re-Index Signal Error] Lỗi xóa vector cho Chapter ID {instance.id}: {str(e)}", exc_info=True)

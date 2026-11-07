@@ -1,7 +1,9 @@
-<!-- Modal AI Biên soạn lại Tri thức (Hỗ trợ chọn Chapter linh hoạt & Tìm kiếm danh mục) -->
+<!-- File path: dashboard/partials/recompile_modal.html -->
+<!-- Chú thích: Modal AI Biên soạn lại Tri thức (Hỗ trợ chọn Chapter linh hoạt, Quick Presets & Custom Instructions). -->
+
 <div x-show="showRecompileModal"
     class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4"
-    x-transition.opacity>
+    x-transition.opacity style="display: none;">
 
     <div @click.away="showRecompileModal = false"
         class="bg-slate-900 border border-slate-800 w-full max-w-xl rounded-2xl shadow-2xl overflow-hidden flex flex-col">
@@ -43,7 +45,7 @@
                     <option value="">-- Chọn mục từ kho tri thức hiện tại --</option>
                     <template x-for="chap in chapters" :key="chap.id">
                         <option :value="chap.id" :selected="selectedChapter && selectedChapter.id === chap.id"
-                            x-text="`[${chap.domain_name || 'Chung'}] ID #${chap.id}: ${chap.title || chap.raw_text.substring(0, 50)}...`">
+                            x-text="`[${chap.domain_name || 'Chung'}] ID #${chap.id}: ${chap.title || (chap.content ? chap.content.substring(0, 50) : '')}...`">
                         </option>
                     </template>
                 </select>
@@ -57,7 +59,7 @@
                         <span x-text="'Trạng thái: ' + selectedChapter.status"></span>
                     </div>
                     <div class="text-slate-300 font-medium line-clamp-2"
-                        x-text="selectedChapter.title || selectedChapter.raw_text"></div>
+                        x-text="selectedChapter.title || selectedChapter.content"></div>
                 </div>
             </template>
 

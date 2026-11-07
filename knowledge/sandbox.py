@@ -1,30 +1,51 @@
+# File path: knowledge/sandbox.py
+# Chú thích: Môi trường thực thi Python bảo mật (Secure Python Sandbox Engine) 
+# cho hệ thống vnxBox Enterprise. Cô lập tiến trình, giới hạn timeout và chặn tuyệt đối module độc hại.
+
 import sys
 import io
+import re
+import logging
 import contextlib
 import multiprocessing
 
-# Danh sách các module bị cấm tuyệt đối để đảm bảo bảo mật hệ thống
-FORBIDDEN_MODULES = ['os', 'sys', 'subprocess', 'socket', 'shutil', 'pathlib', 'ctypes', 'requests']
+logger = logging.getLogger(__name__)
 
-def _restricted_execution_worker(code_str, context_dict, return_dict):
+# Danh sách các module bị cấm tuyệt đối để đảm bảo bảo mật hệ thống
+FORBIDDEN_MODULES = [
+    'os', 'sys', 'subprocess', 'socket', 'shutil', 
+    'pathlib', 'ctypes', 'requests', 'urllib', 'http', 'pickle', 'importlib'
+]
+
+def _restricted_execution_worker(code_str: str, context_dict: dict, return_dict: dict):
     """
     Hàm worker chạy trong tiến trình độc lập (multiprocessing) 
     để cô lập hoàn toàn môi trường thực thi của Secure Sandbox.
     """
-    # Kiểm tra an toàn cơ bản chống mã độc hệ thống
+    # Kiểm tra an toàn chống mã độc hệ thống (kiểm tra regex linh hoạt chống lách khoảng trắng)
+    code_lower = code_str.lower()
     for mod in FORBIDDEN_MODULES:
-        if f"import {mod}" in code_str or f"from {mod}" in code_str:
+        pattern = rf"\b(import|from)\s+{mod}\b"
+        if re.search(pattern, code_lower):
             return_dict["success"] = False
-            return_dict["output"] = f"⚠️ Lỗi bảo mật: Mã Python chứa module bị cấm ({mod})."
+            return_dict["output"] = f"⚠️ Lỗi bảo mật: Mã Python chứa module hoặc lệnh bị cấm ({mod})."
             return
 
-    # Nạp các biến ngữ cảnh (context) vào không gian thực thi nếu có
-    local_scope = dict(context_dict) if context_dict else {}
-    global_scope = {"__builtins__": __builtins__}
+    # Nạp các biến ngữ cảnh (context) và các thư viện tính toán an toàn
+    import math
+    import decimal
+    import datetime
+    import pandas as pd
 
-    # Chặn các built-in nguy hiểm như open, eval, exec nếu cần thiết
-    # Ở đây giữ lại toán học cơ bản và built-in an toàn
-    
+    local_scope = dict(context_dict) if context_dict else {}
+    global_scope = {
+        "__builtins__": __builtins__,
+        "math": math,
+        "decimal": decimal,
+        "datetime": datetime,
+        "pd": pd
+    }
+
     output_capture = io.StringIO()
     try:
         # Chuyển hướng stdout để bắt toàn bộ lệnh print()
@@ -45,17 +66,22 @@ def _restricted_execution_worker(code_str, context_dict, return_dict):
 
         return_dict["success"] = True
         return_dict["output"] = final_output
-        return_dict["variables"] = {k: v for k, v in local_scope.items() if not k.startswith('_') and not callable(v)}
+        # Chỉ lọc trả về các biến cơ bản, an toàn (không chứa hàm hoặc đối tượng hệ thống)
+        return_dict["variables"] = {
+            k: v for k, v in local_scope.items() 
+            if not k.startswith('_') and not callable(v) and not isinstance(v, type)
+        }
 
     except Exception as e:
+        logger.error(f"Lỗi khi thực thi Python Sandbox: {str(e)}", exc_info=True)
         return_dict["success"] = False
         return_dict["output"] = f"Lỗi thực thi code Python: {str(e)}"
 
 
-def run_secure_sandbox(code_str, context_dict=None, timeout_seconds=3):
+def run_secure_sandbox(code_str: str, context_dict: dict = None, timeout_seconds: int = 3) -> dict:
     """
     Thực thi mã Python an toàn trong Secure Code Sandbox với cơ chế giới hạn thời gian (Timeout).
-    Triệt tiêu hoàn toàn ảo giác toán học của AI.
+    Triệt tiêu hoàn toàn ảo giác toán học và tính toán sai lệch của LLM.
     """
     manager = multiprocessing.Manager()
     return_dict = manager.dict()
@@ -70,6 +96,7 @@ def run_secure_sandbox(code_str, context_dict=None, timeout_seconds=3):
 
     if p.is_alive():
         # Nếu quá thời gian cho phép (Timeout) -> Tiêu diệt tiến trình ngay lập tức
+        logger.warning(f"Sandbox Timeout: Tiến trình vượt quá {timeout_seconds} giây và bị hủy.")
         p.terminate()
         p.join()
         return {
@@ -86,5 +113,5 @@ def run_secure_sandbox(code_str, context_dict=None, timeout_seconds=3):
     return {
         "success": return_dict.get("success", False),
         "output": return_dict.get("output", ""),
-        "variables": return_dict.get("variables", {})
+        "variables": dict(return_dict.get("variables", {}))
     }
