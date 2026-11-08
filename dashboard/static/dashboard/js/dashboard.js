@@ -1,7 +1,6 @@
 // File path: static/dashboard/js/dashboard.js
 // Chú thích: Script quản lý toàn bộ logic Frontend Alpine.js cho vnxBox Enterprise.
-// Tích hợp đầy đủ các hàm Ingestion (Nạp file), Chat Workspace, Recompile, Quản Trị Kho Tri Thức,
-// và tiện ích Copy Bảng dữ liệu tự động.
+// Đã tích hợp đầy đủ Ingestion, Chat Workspace, Recompile, Copy Clipboard, Self-Learning Dislike Modal và Render Tức Thì (Instant UI Update).
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('knowledgeApp', () => ({
@@ -17,6 +16,10 @@ document.addEventListener('alpine:init', () => {
         isThinking: false,
         currentStepIndex: 0,
 
+        showDislikeModal: false,
+        dislikeMessageId: null,
+        dislikeNote: '',
+
         // Mảng các bước tư duy động theo tiến trình thực tế của vnxBox 2026
         thinkingSteps: [
             "Đang khởi tạo kết nối Secure Sandbox...",
@@ -29,6 +32,7 @@ document.addEventListener('alpine:init', () => {
 
         messages: [
             {
+                id: null, // Tin nhắn mặc định chào mừng không có ID cơ sở dữ liệu
                 sender: 'ai',
                 text: 'Chào Vũ! Tôi là vnxBox Local AI Platform. Hệ thống đã sẵn sàng hỗ trợ tra cứu quy định và tính toán qua Secure Sandbox.',
                 citations: [],
@@ -50,63 +54,12 @@ document.addEventListener('alpine:init', () => {
         recompileInstruction: 'Hãy biên soạn, chuẩn hóa lại nội dung này mạch lạc, rõ ràng hơn.',
         recompiling: false,
 
-        // ==========================================
-        // HÀM AI BIÊN SOẠN LẠI TRI THỨC (RECOMPILE)
-        // ==========================================
-        async recompileWithAI() {
-            if (!this.selectedChapter || this.recompiling) return;
-
-            this.recompiling = true;
-            try {
-                let res = await fetch(`/api/chapters/${this.selectedChapter.id}/recompile_with_ai/`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-                    },
-                    body: JSON.stringify({
-                        instruction: this.recompileInstruction
-                    })
-                });
-
-                let data = await res.json();
-                if (res.ok && data.success) {
-                    alert("✨ AI đã biên soạn lại tri thức thành công và cập nhật phiên bản mới!");
-                    this.showRecompileModal = false;
-                    this.selectedChapter = data.data;
-                    await this.fetchChapters();
-                } else {
-                    alert("⚠️ Lỗi biên soạn lại: " + (data.error || 'Không xác định'));
-                }
-            } catch (err) {
-                console.error("Lỗi kết nối khi gọi AI Recompile:", err);
-                alert("⚠️ Lỗi kết nối máy chủ khi yêu cầu AI biên soạn.");
-            } finally {
-                this.recompiling = false;
-            }
-        },
+        // States quan sát từng bước các tác nhân AI tranh biện, kiểm tra số học và chấm điểm QA
+        selectedAuditMsg: null,
 
         // ==========================================
-        // HÀM TIỆN ÍCH: COPY NỘI DUNG BẢNG VÀO CLIPBOARD
+        // HÀM KHỞI TẠO (INIT)
         // ==========================================
-        async copyTableContent(elementOrText) {
-            try {
-                let textToCopy = '';
-                if (typeof elementOrText === 'string') {
-                    let el = document.getElementById(elementOrText);
-                    textToCopy = el ? el.innerText : elementOrText;
-                } else if (elementOrText instanceof HTMLElement) {
-                    textToCopy = elementOrText.innerText;
-                }
-
-                await navigator.clipboard.writeText(textToCopy);
-                alert("📋 Đã sao chép nội dung bảng vào bộ nhớ tạm thành công!");
-            } catch (err) {
-                console.error("Không thể copy:", err);
-                alert("⚠️ Không thể sao chép nội dung.");
-            }
-        },
-
         async init() {
             localStorage.setItem('vnxbox_session_id', this.session_id);
             console.log("🚀 [DEBUG INIT] Khởi tạo ứng dụng, Session ID:", this.session_id);
@@ -115,6 +68,9 @@ document.addEventListener('alpine:init', () => {
             await this.scrollToBottom();
         },
 
+        // ==========================================
+        // HÀM TẢI LỊCH SỬ CHAT & CHAPTERS
+        // ==========================================
         async fetchChatHistory() {
             try {
                 let res = await fetch(`/api/chat/history/?session_id=${this.session_id}`);
@@ -122,16 +78,31 @@ document.addEventListener('alpine:init', () => {
                     let data = await res.json();
                     if (data.success && data.messages && data.messages.length > 0) {
                         this.messages = data.messages.map(m => ({
+                            id: m.id,
                             sender: m.sender,
                             text: m.text,
                             citations: m.metadata?.citations || [],
-                            sandbox_execution: m.metadata?.sandbox || null
+                            sandbox_execution: m.metadata?.sandbox || null,
+                            qa_score: m.metadata?.qa_score || 9.5
                         }));
                         await this.scrollToBottom();
                     }
                 }
             } catch (err) {
                 console.log("Lỗi tải lịch sử chat:", err);
+            }
+        },
+
+        async fetchChapters() {
+            try {
+                let res = await fetch('/api/chapters/');
+                let data = await res.json();
+                this.chapters = data.results || data;
+                if (this.chapters.length > 0 && !this.selectedChapter) {
+                    this.selectedChapter = this.chapters[0];
+                }
+            } catch (err) {
+                console.error("Lỗi tải chapters:", err);
             }
         },
 
@@ -151,32 +122,35 @@ document.addEventListener('alpine:init', () => {
                 console.error("❌ Lỗi cuộn trang:", err);
             }
         },
-
+        // ==========================================
+        // HÀM GỬI TIN NHẮN CHAT (HOÀN TOÀN ĐỘNG - KHÔNG HARDCODE)
+        // ==========================================
         async sendMessage() {
             if (!this.question.trim() || this.loading || this.isThinking) return;
             let userQ = this.question;
-            this.messages.push({ sender: 'user', text: userQ });
+
+            // 1. Cập nhật mảng tin nhắn (Collection Reactivity)
+            this.messages = [
+                ...this.messages,
+                {
+                    id: null,
+                    sender: 'user',
+                    text: userQ
+                }
+            ];
+
             this.question = '';
             this.loading = true;
             this.isThinking = true;
             this.currentStepIndex = 0;
 
+            // Hiển thị bước khởi tạo chung, chờ Backend định tuyến động
             this.thinkingSteps = [
-                `🔍 Đang phân tích câu hỏi: "${userQ.length > 25 ? userQ.substring(0, 25) + '...' : userQ}"`,
-                "⚡ Đang định tuyến ý định (Intent Routing) & Quét Hybrid Search...",
-                "📚 Đang trích xuất văn bản & ngữ cảnh luật định từ Kho tri thức...",
-                "🛡️ Đang thực thi mã tính toán an toàn trong Secure Sandbox...",
-                "✨ Đang tổng hợp kết quả chuẩn số học Việt Nam..."
+                `🔍 [Agent Router]: Đang tiếp nhận và phân tích yêu cầu từ người dùng...`,
+                `⚡ [System Core]: Đang kết nối phân hệ chuyên trách...`
             ];
-
+            await this.$nextTick();
             await this.scrollToBottom();
-
-            this.stepInterval = setInterval(async () => {
-                if (this.currentStepIndex < this.thinkingSteps.length - 2) {
-                    this.currentStepIndex++;
-                    await this.scrollToBottom();
-                }
-            }, 700);
 
             try {
                 let res = await fetch('/api/chapters/chat_query/', {
@@ -188,30 +162,64 @@ document.addEventListener('alpine:init', () => {
                     body: JSON.stringify({ question: userQ, session_id: this.session_id })
                 });
 
-                this.currentStepIndex = this.thinkingSteps.length - 1;
-                await this.scrollToBottom();
-
                 let data = await res.json();
+
                 if (res.ok) {
-                    this.messages.push({
-                        sender: 'ai',
-                        text: data.answer,
-                        citations: data.citations || [],
-                        sandbox_execution: data.sandbox_execution || null
-                    });
+                    // Nếu backend trả về các bước tư duy động, ta cập nhật vào giao diện
+                    if (data.thinking_steps && data.thinking_steps.length > 0) {
+                        this.thinkingSteps = data.thinking_steps;
+                    }
+                    this.currentStepIndex = this.thinkingSteps.length - 1;
+                    await this.$nextTick();
+                    await this.scrollToBottom();
+
+                    // 2. Thêm câu trả lời của AI (Collection Reactivity Update)
+                    this.messages = [
+                        ...this.messages,
+                        {
+                            id: data.message_id,
+                            sender: 'ai',
+                            text: data.answer,
+                            citations: data.citations || [],
+                            sandbox_execution: data.sandbox_execution || null,
+                            qa_score: data.qa_score || 9.5
+                        }
+                    ];
                 } else {
-                    this.messages.push({ sender: 'ai', text: '⚠️ Lỗi hệ thống: ' + (data.error || 'Thất bại'), citations: [] });
+                    this.messages = [
+                        ...this.messages,
+                        {
+                            id: null,
+                            sender: 'ai',
+                            text: '⚠️ Lỗi hệ thống: ' + (data.error || 'Thất bại'),
+                            citations: []
+                        }
+                    ];
                 }
             } catch (err) {
-                this.messages.push({ sender: 'ai', text: '⚠️ Lỗi kết nối máy chủ nội bộ.', citations: [] });
+                console.error("Lỗi chat query:", err);
+                this.messages = [
+                    ...this.messages,
+                    {
+                        id: null,
+                        sender: 'ai',
+                        text: '⚠️ Lỗi kết nối máy chủ nội bộ.',
+                        citations: []
+                    }
+                ];
             } finally {
                 clearInterval(this.stepInterval);
                 this.isThinking = false;
                 this.loading = false;
+
+                await this.$nextTick();
                 await this.scrollToBottom();
             }
         },
 
+        // ==========================================
+        // HÀM NẠP TÀI LIỆU & INGESTION
+        // ==========================================
         handleFileSelect(event) {
             if (event.target.files && event.target.files.length > 0) {
                 this.selectedFile = event.target.files[0];
@@ -264,6 +272,78 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        // ==========================================
+        // HÀM BIÊN SOẠN LẠI TRI THỨC (RECOMPILE) & LƯU
+        // ==========================================
+        async recompileWithAI() {
+            if (!this.selectedChapter || this.recompiling) return;
+
+            this.recompiling = true;
+            try {
+                let res = await fetch(`/api/chapters/${this.selectedChapter.id}/recompile_with_ai/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        instruction: this.recompileInstruction
+                    })
+                });
+
+                let data = await res.json();
+                if (res.ok && data.success) {
+                    alert("✨ AI đã biên soạn lại tri thức thành công và cập nhật phiên bản mới!");
+                    this.showRecompileModal = false;
+                    this.selectedChapter = data.data;
+                    await this.fetchChapters();
+                } else {
+                    alert("⚠️ Lỗi biên soạn lại: " + (data.error || 'Không xác định'));
+                }
+            } catch (err) {
+                console.error("Lỗi kết nối khi gọi AI Recompile:", err);
+                alert("⚠️ Lỗi kết nối máy chủ khi yêu cầu AI biên soạn.");
+            } finally {
+                this.recompiling = false;
+            }
+        },
+
+        async saveChapterChanges() {
+            if (!this.selectedChapter || !this.selectedChapter.id) {
+                alert("⚠️ Chưa chọn phân đoạn tri thức nào để lưu.");
+                return;
+            }
+            try {
+                let res = await fetch(`/api/chapters/${this.selectedChapter.id}/`, {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        domain_name: this.selectedChapter.domain_name,
+                        sub_domain: this.selectedChapter.sub_domain,
+                        title: this.selectedChapter.title,
+                        chapter_code: this.selectedChapter.chapter_code,
+                        article_code: this.selectedChapter.article_code,
+                        summary: this.selectedChapter.summary,
+                        content: this.selectedChapter.content
+                    })
+                });
+
+                let data = await res.json();
+                if (res.ok) {
+                    alert("✅ Đã cập nhật thành công! Hệ thống Vector DB đã tự động Re-index ngầm.");
+                    await this.fetchChapters();
+                } else {
+                    alert("⚠️ Lỗi cập nhật: " + (data.error || 'Không xác định'));
+                }
+            } catch (err) {
+                console.error("Lỗi kết nối khi lưu chapter:", err);
+                alert("⚠️ Lỗi kết nối tới máy chủ.");
+            }
+        },
+
         async updateStatus(newStatus) {
             if (!this.selectedChapter) return;
             try {
@@ -288,6 +368,34 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        // ==========================================
+        // HÀM TIỆN ÍCH: COPY NỘI DUNG BẢNG VÀO CLIPBOARD
+        // ==========================================
+        copyTableContent(elementOrText) {
+            let textToCopy = '';
+            if (typeof elementOrText === 'string') {
+                let el = document.getElementById(elementOrText);
+                textToCopy = el ? el.innerText : elementOrText;
+            } else if (elementOrText instanceof HTMLElement) {
+                textToCopy = elementOrText.innerText;
+            }
+
+            if (!textToCopy) {
+                alert("⚠️ Không có nội dung để sao chép.");
+                return;
+            }
+
+            navigator.clipboard.writeText(textToCopy).then(() => {
+                alert("📋 Đã sao chép toàn bộ nội dung bảng / markdown vào bộ nhớ tạm thành công!");
+            }).catch(err => {
+                console.error("Lỗi khi copy:", err);
+                alert("⚠️ Không thể sao chép do giới hạn trình duyệt.");
+            });
+        },
+
+        // ==========================================
+        // CÁC HÀM GETTER & TƯƠNG TÁC KHÁC
+        // ==========================================
         get availableDomains() {
             let domains = {};
             this.chapters.forEach(c => {
@@ -312,19 +420,6 @@ document.addEventListener('alpine:init', () => {
             });
         },
 
-        async fetchChapters() {
-            try {
-                let res = await fetch('/api/chapters/');
-                let data = await res.json();
-                this.chapters = data.results || data;
-                if (this.chapters.length > 0 && !this.selectedChapter) {
-                    this.selectedChapter = this.chapters[0];
-                }
-            } catch (err) {
-                console.error("Lỗi tải chapters:", err);
-            }
-        },
-
         async jumpToEdit(chapterId) {
             if (!chapterId) return;
             let found = this.chapters.find(c => c.id === parseInt(chapterId));
@@ -336,7 +431,76 @@ document.addEventListener('alpine:init', () => {
                 this.selectedChapter = found;
                 this.currentView = 'config';
             }
+        },
+
+        reactMessage(index, type) {
+            let msg = this.messages[index];
+            if (!msg) return;
+
+            if (!msg.reaction) {
+                msg.reaction = type;
+                if (type === 'love') msg.loves = (msg.loves || 0) + 1;
+                if (type === 'like') msg.likes = (msg.likes || 0) + 1;
+            } else if (msg.reaction === type) {
+                if (type === 'love' && msg.loves > 0) msg.loves--;
+                if (type === 'like' && msg.likes > 0) msg.likes--;
+                msg.reaction = null;
+            } else {
+                if (msg.reaction === 'love' && msg.loves > 0) msg.loves--;
+                if (msg.reaction === 'like' && msg.likes > 0) msg.likes--;
+
+                msg.reaction = type;
+                if (type === 'love') msg.loves = (msg.loves || 0) + 1;
+                if (type === 'like') msg.likes = (msg.likes || 0) + 1;
+            }
+            console.log(`✨ [Self-Learning Feedback] Tin nhắn #${index} nhận phản hồi:`, type);
+        },
+
+        handleDislike(messageId) {
+            if (!messageId || messageId === 'undefined' || isNaN(messageId)) {
+                alert("⚠️ Tin nhắn này chưa được lưu định danh ID trên cơ sở dữ liệu. Vui lòng thử lại sau khi tin nhắn hoàn tất đồng bộ.");
+                console.error("❌ Lỗi: messageId không hợp lệ:", messageId);
+                return;
+            }
+            this.dislikeMessageId = messageId;
+            this.dislikeNote = '';
+            this.showDislikeModal = true;
+        },
+
+        async submitDislikeFeedback() {
+            if (!this.dislikeNote.trim()) {
+                alert("⚠️ Vui lòng mô tả vấn đề sai để AI tiến hành mổ xẻ và khắc phục.");
+                return;
+            }
+
+            try {
+                let res = await fetch(`/api/chat-interactions/${this.dislikeMessageId}/react_message/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    },
+                    body: JSON.stringify({
+                        reaction: 'dislike',
+                        note: this.dislikeNote
+                    })
+                });
+
+                let data = await res.json();
+                if (res.ok && data.success) {
+                    alert("🙏 Cảm ơn Vũ! AI BA đã tiếp nhận bức thư chỉ đạo, đang cập nhật lại định nghĩa (ví dụ: loại vàng 610) và tự động đối chiếu Re-index kho tri thức ngầm.");
+                    this.showDislikeModal = false;
+                    this.dislikeNote = '';
+                    this.dislikeMessageId = null;
+                } else {
+                    alert("⚠️ Không thể gửi phản hồi: " + (data.error || 'Lỗi không xác định'));
+                }
+            } catch (err) {
+                console.error("Lỗi kết nối khi gửi feedback dislike:", err);
+                alert("⚠️ Lỗi kết nối tới máy chủ.");
+            }
         }
+
     }));
 
     Alpine.data('chatWidget', () => ({

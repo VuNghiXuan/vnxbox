@@ -1,0 +1,116 @@
+<!-- File path: knowledge/templates/knowledge/viber_war_room.html -->
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>vnxBox Enterprise - AI War Room</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-gray-900 text-gray-100 font-sans min-h-screen p-6">
+    <div class="max-w-6xl mx-auto" x-data="warRoomData()">
+        <!-- Header -->
+        <header class="flex justify-between items-center mb-8 border-b border-gray-800 pb-4">
+            <div>
+                <h1 class="text-3xl font-bold tracking-wider text-green-400">⚡ vnxBox Enterprise</h1>
+                <p class="text-sm text-gray-400">Blueprint-Driven Autonomous AI Corporation - War Room Dashboard</p>
+            </div>
+            <button @click="runCorporation()" :disabled="isRunning"
+                class="bg-green-600 hover:bg-green-500 text-gray-900 font-bold px-6 py-3 rounded-lg shadow-lg transition duration-200 flex items-center space-x-2 disabled:opacity-50 cursor-pointer">
+                <span x-show="!isRunning">🚀 Khởi động Tập đoàn AI</span>
+                <span x-show="isRunning">⚙️ Đang xử lý tự trị...</span>
+            </button>
+        </header>
+
+        <!-- Main Content Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Left: Task Execution List -->
+            <div class="bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-700">
+                <h2 class="text-xl font-semibold mb-4 text-blue-400">📋 Trạng thái DAG Tasks</h2>
+                <div class="space-y-3 overflow-y-auto max-h-[500px]">
+                    <template x-for="task in tasks" :key="task.task_id">
+                        <div
+                            class="bg-gray-900 p-4 rounded-lg border border-gray-700 flex justify-between items-center">
+                            <div>
+                                <span class="text-xs font-mono bg-blue-900 text-blue-200 px-2 py-1 rounded"
+                                    x-text="task.task_id"></span>
+                                <p class="font-medium mt-1" x-text="task.title"></p>
+                                <p class="text-xs text-gray-400 mt-1">Phụ trách: <span class="text-yellow-400"
+                                        x-text="task.assigned_to"></span></p>
+                            </div>
+                            <span class="px-3 py-1 text-xs rounded font-bold"
+                                :class="task.status === 'SUCCESS' ? 'bg-green-900 text-green-300' : 'bg-yellow-900 text-yellow-300'"
+                                x-text="task.status"></span>
+                        </div>
+                    </template>
+                    <div x-show="tasks.length === 0" class="text-gray-500 text-center py-10">
+                        Chưa có dữ liệu tác vụ. Nhấn "Khởi động Tập đoàn AI" để bắt đầu.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: QA Test Report & Live Logs with Copy Button -->
+            <div class="bg-gray-800 rounded-xl p-6 shadow-xl border border-gray-700 flex flex-col">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-semibold text-purple-400">🧪 Báo cáo Kiểm thử QA (Test Case)</h2>
+                    <button @click="copyReport()"
+                        x-show="testReport && testReport !== 'Đang khởi động hệ thống tự trị đa phòng ban...'"
+                        class="bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold px-3 py-1.5 rounded transition duration-200 flex items-center space-x-1 cursor-pointer">
+                        <span x-text="copied ? '✅ Đã sao chép!' : '📋 Copy Bảng Markdown'"></span>
+                    </button>
+                </div>
+                <div class="bg-gray-900 p-4 rounded-lg border border-gray-700 flex-1 overflow-y-auto max-h-[500px] font-mono text-xs text-gray-300 whitespace-pre-wrap"
+                    x-text="testReport || 'Chờ sinh báo cáo kiểm thử...'"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function warRoomData() {
+            return {
+                isRunning: false,
+                tasks: [],
+                testReport: '',
+                copied: false,
+                async runCorporation() {
+                    this.isRunning = true;
+                    this.tasks = [];
+                    this.testReport = 'Đang khởi động hệ thống tự trị đa phòng ban...';
+
+                    try {
+                        let response = await fetch('/war-room/api/run/', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRFToken': '{{ csrf_token }}'
+                            }
+                        });
+                        let data = await response.json();
+                        if (data.status === 'success') {
+                            this.tasks = data.tasks;
+                            this.testReport = data.test_report;
+                        } else {
+                            this.testReport = 'Lỗi thực thi: ' + data.message;
+                        }
+                    } catch (error) {
+                        this.testReport = 'Lỗi kết nối Server: ' + error;
+                    } finally {
+                        this.isRunning = false;
+                    }
+                },
+                copyReport() {
+                    if (!this.testReport) return;
+                    navigator.clipboard.writeText(this.testReport);
+                    this.copied = true;
+                    setTimeout(() => {
+                        this.copied = false;
+                    }, 2000);
+                }
+            }
+        }
+    </script>
+</body>
+
+</html>

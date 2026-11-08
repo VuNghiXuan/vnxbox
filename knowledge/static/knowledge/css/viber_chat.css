@@ -1,0 +1,31 @@
+/* File path: knowledge/static/knowledge/css/viber_chat.css */
+/* Chú thích: Định dạng tùy chỉnh bổ trợ cho khung chat vnxBox Enterprise */
+
+body {
+    background-color: #111827;
+    color: #f3f4f6;
+    margin: 0;
+    padding: 0;
+}
+
+#chat-messages-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+#chat-messages-container::-webkit-scrollbar-track {
+    background: #1f2937;
+}
+
+#chat-messages-container::-webkit-scrollbar-thumb {
+    background: #4b5563;
+    border-radius: 3px;
+}
+
+#chat-messages-container::-webkit-scrollbar-thumb:hover {
+    background: #6b7280;
+}
+
+pre {
+    scrollbar-width: thin;
+    scrollbar-color: #4b5563 #1f2937;
+}

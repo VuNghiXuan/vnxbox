@@ -1,0 +1,482 @@
+{
+  "project_name": "vnxBox Enterprise v2.6",
+  "root_directory": "D:\\ThanhVu\\ChatBox\\vnxbox",
+  "directories": {
+    "root": {
+      "files": [
+        {
+          "file_name": ".gitignore",
+          "size_bytes": 480
+        },
+        {
+          "file_name": "abc",
+          "size_bytes": 10
+        },
+        {
+          "file_name": "make_logo.py",
+          "size_bytes": 6861
+        },
+        {
+          "file_name": "manage.py",
+          "size_bytes": 689
+        },
+        {
+          "file_name": "project_map.json",
+          "size_bytes": 11096
+        },
+        {
+          "file_name": "promt dự án 2.txt",
+          "size_bytes": 14601
+        },
+        {
+          "file_name": "promt dự án.txt",
+          "size_bytes": 15107
+        },
+        {
+          "file_name": "README.md",
+          "size_bytes": 2876
+        },
+        {
+          "file_name": "requirements.txt",
+          "size_bytes": 3526
+        },
+        {
+          "file_name": "test_api.py",
+          "size_bytes": 2470
+        },
+        {
+          "file_name": "test_sandbox.py",
+          "size_bytes": 369
+        },
+        {
+          "file_name": "test_vnxchat.py",
+          "size_bytes": 3788
+        },
+        {
+          "file_name": "tiến độ.txt",
+          "size_bytes": 4551
+        }
+      ]
+    },
+    "chroma_db\\23e85135-92f1-470f-abef-f739d9334a61": {
+      "files": [
+        {
+          "file_name": "data_level0.bin",
+          "size_bytes": 167600
+        },
+        {
+          "file_name": "header.bin",
+          "size_bytes": 100
+        },
+        {
+          "file_name": "length.bin",
+          "size_bytes": 400
+        },
+        {
+          "file_name": "link_lists.bin",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "dashboard": {
+      "files": [
+        {
+          "file_name": "admin.py",
+          "size_bytes": 66
+        },
+        {
+          "file_name": "apps.py",
+          "size_bytes": 156
+        },
+        {
+          "file_name": "models.py",
+          "size_bytes": 60
+        },
+        {
+          "file_name": "tests.py",
+          "size_bytes": 63
+        },
+        {
+          "file_name": "urls.py",
+          "size_bytes": 279
+        },
+        {
+          "file_name": "views.py",
+          "size_bytes": 201
+        },
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "dashboard\\migrations": {
+      "files": [
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "dashboard\\static\\dashboard": {
+      "files": [
+        {
+          "file_name": "vuxuan_animated_logo.gif",
+          "size_bytes": 41486
+        }
+      ]
+    },
+    "dashboard\\static\\dashboard\\css": {
+      "files": [
+        {
+          "file_name": "custom_theme.css",
+          "size_bytes": 1757
+        },
+        {
+          "file_name": "tailwind.min.css",
+          "size_bytes": 4107134
+        }
+      ]
+    },
+    "dashboard\\static\\dashboard\\js": {
+      "files": [
+        {
+          "file_name": "alpine.min.js",
+          "size_bytes": 66597
+        },
+        {
+          "file_name": "dashboard.js",
+          "size_bytes": 22726
+        }
+      ]
+    },
+    "dashboard\\templates\\dashboard": {
+      "files": [
+        {
+          "file_name": "base_layout.html",
+          "size_bytes": 2445
+        }
+      ]
+    },
+    "dashboard\\templates\\dashboard\\partials": {
+      "files": [
+        {
+          "file_name": "chat_view.html",
+          "size_bytes": 13747
+        },
+        {
+          "file_name": "chat_widget.html",
+          "size_bytes": 8665
+        },
+        {
+          "file_name": "knowledge_config_view.html",
+          "size_bytes": 13637
+        },
+        {
+          "file_name": "recompile_modal.html",
+          "size_bytes": 2729
+        },
+        {
+          "file_name": "sidebar_nav.html",
+          "size_bytes": 3221
+        },
+        {
+          "file_name": "topbar_header.html",
+          "size_bytes": 2116
+        },
+        {
+          "file_name": "upload_modal.html",
+          "size_bytes": 3795
+        },
+        {
+          "file_name": "war_room_view.html",
+          "size_bytes": 19763
+        }
+      ]
+    },
+    "knowledge": {
+      "files": [
+        {
+          "file_name": "admin.py",
+          "size_bytes": 3609
+        },
+        {
+          "file_name": "ai_services.py",
+          "size_bytes": 4945
+        },
+        {
+          "file_name": "apps.py",
+          "size_bytes": 2137
+        },
+        {
+          "file_name": "chunker.py",
+          "size_bytes": 6225
+        },
+        {
+          "file_name": "file_parsers.py",
+          "size_bytes": 14227
+        },
+        {
+          "file_name": "hybrid_search.py",
+          "size_bytes": 6201
+        },
+        {
+          "file_name": "llm_client.py",
+          "size_bytes": 2124
+        },
+        {
+          "file_name": "middleware.py",
+          "size_bytes": 3960
+        },
+        {
+          "file_name": "models.py",
+          "size_bytes": 13163
+        },
+        {
+          "file_name": "project_mapper.py",
+          "size_bytes": 2377
+        },
+        {
+          "file_name": "sandbox.py",
+          "size_bytes": 5572
+        },
+        {
+          "file_name": "search_engine.py",
+          "size_bytes": 10257
+        },
+        {
+          "file_name": "serializers.py",
+          "size_bytes": 6152
+        },
+        {
+          "file_name": "signals.py",
+          "size_bytes": 5238
+        },
+        {
+          "file_name": "tests.py",
+          "size_bytes": 63
+        },
+        {
+          "file_name": "urls.py",
+          "size_bytes": 1777
+        },
+        {
+          "file_name": "views.py",
+          "size_bytes": 20233
+        },
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 89
+        }
+      ]
+    },
+    "knowledge\\agents": {
+      "files": [
+        {
+          "file_name": "accounting_sub_graph.py",
+          "size_bytes": 4174
+        },
+        {
+          "file_name": "agent_factory.py",
+          "size_bytes": 7060
+        },
+        {
+          "file_name": "ba_arbiter.py",
+          "size_bytes": 8968
+        },
+        {
+          "file_name": "dag_planner.py",
+          "size_bytes": 3114
+        },
+        {
+          "file_name": "execution_dispatcher.py",
+          "size_bytes": 5301
+        },
+        {
+          "file_name": "qa_evaluator.py",
+          "size_bytes": 2879
+        },
+        {
+          "file_name": "router_graph.py",
+          "size_bytes": 6641
+        },
+        {
+          "file_name": "state.py",
+          "size_bytes": 1691
+        },
+        {
+          "file_name": "vibercode_patcher.py",
+          "size_bytes": 4427
+        },
+        {
+          "file_name": "viber_docling_parser.py",
+          "size_bytes": 5262
+        },
+        {
+          "file_name": "viber_graph_rag.py",
+          "size_bytes": 2158
+        },
+        {
+          "file_name": "viber_intent_router.py",
+          "size_bytes": 3506
+        },
+        {
+          "file_name": "viber_protocol_bridge.py",
+          "size_bytes": 2348
+        },
+        {
+          "file_name": "viber_self_healing.py",
+          "size_bytes": 3818
+        },
+        {
+          "file_name": "viber_test_generator.py",
+          "size_bytes": 2335
+        },
+        {
+          "file_name": "viber_war_room_view.py",
+          "size_bytes": 2819
+        },
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "knowledge\\management": {
+      "files": [
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "knowledge\\management\\commands": {
+      "files": [
+        {
+          "file_name": "run_corporation.py",
+          "size_bytes": 2826
+        },
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "knowledge\\migrations": {
+      "files": [
+        {
+          "file_name": "0001_initial.py",
+          "size_bytes": 1468
+        },
+        {
+          "file_name": "0002_knowledgechapter_previous_content_and_more.py",
+          "size_bytes": 1508
+        },
+        {
+          "file_name": "0003_remove_knowledgechapter_previous_content_and_more.py",
+          "size_bytes": 4569
+        },
+        {
+          "file_name": "0004_chatsession_knowledgechapter_sheet_name_and_more.py",
+          "size_bytes": 2692
+        },
+        {
+          "file_name": "0005_departmentregistry_auditdebatelog_qaevaluationlog.py",
+          "size_bytes": 4119
+        },
+        {
+          "file_name": "0006_companydomain_chatmessage_needs_supervised_learning_and_more.py",
+          "size_bytes": 7728
+        },
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "knowledge\\parsers": {
+      "files": [
+        {
+          "file_name": "docling_parser.py",
+          "size_bytes": 1900
+        },
+        {
+          "file_name": "ocr_engine.py",
+          "size_bytes": 518
+        },
+        {
+          "file_name": "taxonomy_engine.py",
+          "size_bytes": 5240
+        },
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    },
+    "knowledge\\static\\knowledge\\css": {
+      "files": [
+        {
+          "file_name": "viber_chat.css",
+          "size_bytes": 684
+        }
+      ]
+    },
+    "knowledge\\static\\knowledge\\js": {
+      "files": [
+        {
+          "file_name": "viber_chat.js",
+          "size_bytes": 7116
+        }
+      ]
+    },
+    "knowledge\\templates\\knowledge": {
+      "files": [
+        {
+          "file_name": "chat.html",
+          "size_bytes": 1925
+        },
+        {
+          "file_name": "viber_chat.html",
+          "size_bytes": 9438
+        },
+        {
+          "file_name": "viber_war_room.html",
+          "size_bytes": 6156
+        }
+      ]
+    },
+    "static\\dashboard": {
+      "files": [
+        {
+          "file_name": "vuxuan_animated_logo.gif",
+          "size_bytes": 35869
+        }
+      ]
+    },
+    "vnxbox_core": {
+      "files": [
+        {
+          "file_name": "asgi.py",
+          "size_bytes": 415
+        },
+        {
+          "file_name": "settings.py",
+          "size_bytes": 4352
+        },
+        {
+          "file_name": "urls.py",
+          "size_bytes": 896
+        },
+        {
+          "file_name": "wsgi.py",
+          "size_bytes": 415
+        },
+        {
+          "file_name": "__init__.py",
+          "size_bytes": 0
+        }
+      ]
+    }
+  }
+}

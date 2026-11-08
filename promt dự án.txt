@@ -1,0 +1,120 @@
+vnxbox-architecture-spec
+Bản chỉ dẫn kiến trúc, quy trình hệ thống, luồng tra cứu Hybrid Search, Secure Sandbox, Active Learning (RLHF), LangGraph Multi-Agent và Super-Agent Vibercode của dự án vnxBox Enterprise (Build 2026). Dùng để tra cứu hoặc làm tài liệu chuẩn khi cần phát triển, mở rộng dự án.
+
+Instructions
+📜 BẢN CHỈ DẪN KIẾN TRÚC & QUY TRÌNH HỆ THỐNG (BUILD 2026 "ĐỤNG NÓC BANH TRẦN" ULTIMATE AGI SPEC)
+UNIVERSAL B2B LOCAL AI PLATFORM — VNXBOX ENTERPRISE & VIBERCODE
+
+(Hệ thống AI Tự trị Đa ngành cấp độ AGI Local-First: Enterprise AI Corporation Architecture, Hardware-Adaptive Routing, Neuro-Symbolic Solver, Test-Time Compute MCTS, GraphRAG, Multi-Agent Debate & Self-Refinement, Synthetic QA & RAGAS Evaluation, Docling Layout Parsing, QLoRA / CPU Fine-Tuning, Advanced Semantic Caching, Secure Sandbox & Self-Evolving AST Code Generation)
+
+I. TẦM NHÌN SẢN PHẨM & NGUYÊN TẮC CỐT LÕI (TOP 1% EXPERT MINDSET)
+1. Kiến trúc Local-First & Headless
+100% Offline & Bảo mật tuyệt đối: Chạy hoàn toàn trên phần cứng nội bộ (Ollama + qwen2.5-coder + bge-m3 Embeddings). Dữ liệu doanh nghiệp không bao giờ rời khỏi mạng LAN.
+Tách biệt Core & Frontend: Django REST API / WebSocket đóng vai trò Core Engine, kết nối đồng nhất với mọi giao diện (Admin Dashboard, Webview, Floating Chat Widget).
+2. Triệt tiêu Ảo giác & Tuyệt đối Không Hardcode (Zero-Hallucination & Neuro-Symbolic Execution)
+Cấm AI nhẩm số & Cấm Hardcode Logic: AI không bao giờ được tự nhẩm con số tài chính hay cố định logic (hardcode) bằng văn bản. Mọi bài toán biến động theo ngành nghề, công thức định mức đều phải được AI tự phân tích động (Dynamic Generation).
+Tích hợp Neuro-Symbolic Solver (Z3 / Constraint Solvers): Đối với các bài toán tính toán chiết khấu, định mức phức tạp, AI dịch yêu cầu thành hệ phương trình logic hình thức và chuyển cho bộ giải toán học tuyệt đối trong Sandbox để đạt độ chính xác 100% về mặt toán học, triệt tiêu hoàn toàn sai số xác suất.
+Thực thi qua Secure Python Sandbox: Code sinh ra được đẩy vào môi trường cô lập (knowledge/sandbox.py: Timeout 2–3s, RAM 128MB) để xử lý dữ liệu lớn.
+3. Minh bạch Trích dẫn & Định vị Sâu (Deep Traceability & Audit Trail)
+Định vị đa tầng: Trích dẫn tường minh cấu trúc: [Doanh Nghiệp / Phân Hệ] > [Domain Lĩnh Vực] > [Sub-Domain Nghiệp Vụ] > [Chương X] > [Điều Y] > [Mục Z / Sheet Name].
+1-Click Edit & Rollback: Bấm trích dẫn mở ngay vị trí chỉnh sửa trên Admin. Lưu lịch sử KnowledgeHistory hỗ trợ so sánh Diff và Rollback 1-Click.
+4. Quy chuẩn Code, Tách File & Đường Dẫn
+Đường dẫn & Chú thích Rõ ràng: Mọi đoạn mã/code khi trao đổi hoặc xuất bản đều bắt buộc ghi rõ tên file và đường dẫn chú thích đầy đủ ở dòng đầu tiên. Mọi class, hàm, biến đều phải có chú thích chi tiết.
+Chủ động Tách File (>300 dòng): Khi file code vượt quá 300 dòng, phải chủ động phân tách thành các sub-modules/services độc lập.
+II. CHIẾN LƯỢC QUẢN LÝ TÀI NGUYÊN PHẦN CỨNG & ĐA MÔ HÌNH (SMART RESOURCE ENGINE)
+1. Khảo sát Phần cứng & Tự động Cấu hình (Hardware Auto-Profiling)
+High-End / Mid-Range / Low-End Auto-Tuning: Tự động quét RAM, CPU, GPU để điều chỉnh num_ctx, chunk_size và lựa chọn mô hình Ollama phù hợp (qwen2.5-coder:7b cho máy mạnh, qwen2.5:1.5b cho máy yếu), triệt tiêu hoàn toàn lỗi ReadTimeoutError.
+CPU-Only / Non-GPU Optimization: Khi máy chủ không có GPU rời, hệ thống ưu tiên Vector/Graph RAG, Quantized Inference và Semantic Caching thay cho Fine-tuning GPU nặng nhọc.
+2. Định tuyến Đa Mô hình Chuyên biệt (Multi-Model Routing)
+Model Code & Toán học (qwen2.5-coder): Xử lý logic tính toán, viết script Python, sinh file Excel có công thức và dựng phần mềm.
+Model Ngôn ngữ & Tổng hợp (llama3 / gemma2): Bóc tách tài liệu thô, phân cấp taxonomy và sinh FAQ Radar.
+Model Siêu Nhẹ (Lightweight Model): Tóm tắt bộ nhớ lịch sử chat (Sliding Window Memory) duy trì phản hồi < 1 giây.
+III. BỘ LỌC ĐA CẤU TRÚC FILE, CÂY TRI THỨC & FAQ RADAR (TÍCH HỢP DOCLING)
+1. Bóc tách Tài liệu Thông minh bằng Thư viện Mở Docling (by IBM)
+PDF & Tài liệu phức tạp: Nhận diện hoàn hảo cấu trúc Markdown, tiêu đề phân cấp, bảng biểu (Tables) và công thức toán học.
+Excel/CSV (Sheet-Aware): Tự động bóc tách từng Sheet thành các Chapter riêng biệt, bảo toàn nguyên vẹn cấu trúc ma trận dữ liệu 2D.
+OCR Tích hợp: Xử lý mượt mà các tệp ảnh hoặc PDF dạng scan thành văn bản chuẩn cấu trúc trước khi đưa vào RAG.
+2. Phân cấp Cây Tri thức Động & Auto FAQ Generation
+Tự động gán Metadata ngành nghề (domain_name, sub_domain) và sinh 6–10 câu hỏi mẫu (intent_faqs) cho mỗi phân đoạn tri thức.
+IV. QUẢN TRỊ ADMIN, AUTO RE-INDEX, PHIÊN BẢN & BẢO MẬT SANDBOX
+1. Hardened Python Sandbox (knowledge/sandbox.py)
+Môi trường cô lập thực thi code toán học, xử lý dữ liệu với thời gian giới hạn và chặn tuyệt đối các module độc hại (os, subprocess, socket).
+2. Auto Re-Indexing & Clarification UI
+Tự động cập nhật Vector DB qua Django Signals. Phân loại độ tin cậy RAG (Score $\ge 0.70$: AUTO_APPROVED; Score $< 0.70$: NEEDS_REVIEW kích hoạt cảnh báo cho Admin).
+V. KIẾN TRÚC TRUY VẤN ĐA TẦNG, GRAPHRAG & ADVANCED SEMANTIC CACHING
+1. GraphRAG (Knowledge Graph + Vector RAG Kết Hợp)
+Khắc phục hạn chế RAG thuần: RAG truyền thống cắt nhỏ tài liệu thành các đoạn độc lập (Chunks), dễ bị đứt mạch ngữ cảnh khi gặp câu hỏi yêu cầu xâu chuỗi thông tin từ nhiều chương, nhiều quy chế (Multi-hop Reasoning).
+Giải pháp: Xây dựng Đồ thị Tri thức (Knowledge Graph) bằng Microsoft GraphRAG hoặc NetworkX kết hợp Neo4j.
+Cách thức & Giá trị: AI tự động trích xuất thực thể doanh nghiệp (Cấp đại lý, Định mức 9999, Công thức tính hao hụt, Trách nhiệm chủ đầu tư) và các mối quan hệ (Edges). Khi truy vấn, hệ thống vừa tìm kiếm vector vừa "đi bộ" trên đồ thị tri thức để gom toàn bộ bức tranh móc xích phức tạp về cho LLM.
+2. Advanced Semantic Caching with Vector DB (GPTCache / Redis)
+Tích hợp lớp Semantic Cache chuyên sâu. Khi nhân viên hỏi câu có ý nghĩa tương đương $\ge 90%$ với câu hỏi từng được Like/Tim, hệ thống trả về kết quả tức thì (dưới 0.05 giây) bằng cách tra cứu Vector Cache, tiết kiệm tuyệt đối tài nguyên phần cứng cho Ollama.
+VI. CƠ CHẾ ACTIVE LEARNING, PHẢN HỒI, RLHF & NIGHTLY QLORA FINE-TUNING
+1. Widget Đánh giá Trực quan & Vòng lặp Học tập
+👍 Like / ❤️ Tim: Lưu cặp câu hỏi - trả lời vào Semantic Cache.
+👎 Dislike / 🛑 Bad: Yêu cầu nhập lý do phản biện $\rightarrow$ Đưa vào Admin Review Queue để Admin bấm 🤖 AI Biên Soạn Lại cập nhật tri thức.
+2. Continuous Fine-Tuning & Direct Preference Optimization (DPO / QLoRA tại chỗ)
+Nightly Training Loop: Hàng tuần, hệ thống tự động gom toàn bộ các cặp câu hỏi-trả lời được Like/Tim và các bản biên soạn chuẩn của Admin.
+Chạy tiến trình huấn luyện nhẹ QLoRA (nếu máy có GPU) hoặc cập nhật trọng số Semantic / Vector Cache linh hoạt (nếu chỉ có CPU).
+VII. ĐẶC TẢ GIAO DIỆN & THAO TÁC XUẤT DỮ LIỆU (UI/UX SPEC)
+1. Nút Thao tác Nhanh (Copy Bảng & Export Hub)
+Nút Copy Nội dung Bảng: Mọi Markdown Table hoặc dữ liệu xuất ra đều đính kèm nút Copy nhanh ở góc trên bên phải.
+Download File Động: Hỗ trợ xuất file trực tiếp [📄 Export MD], [📝 Export DOCX], [📊 Export Excel có công thức].
+VIII. SUPER-AGENT VIBERCODE & LANGGRAPH MULTI-AGENT ORCHESTRATION
+[User Task Request / File / URL]
+        │
+        ▼
+[Planner Agent: Phân rã công việc thành DAG Tasks]
+        │
+        ▼
+[LangGraph Multi-Role Orchestrator (Stateful & Cyclic Graph)]
+        ├── 📋 Classifier & Ingestion Agent: Phân loại tài liệu, bóc tách cấu trúc bằng Docling
+        ├── ⚖️ Legal & Compliance Agent: Kiểm tra quy chế, rà soát rủi ro tuân thủ
+        ├── 🧠 Test-Time Compute & MCTS Engine: AI tự nháp, kiểm chứng từng bước ngầm (Step-by-step verification) trước khi xuất đáp án
+        ├── 💻 Dev & Sandbox Agent: Viết code động, tự sửa file & chạy Sandbox an toàn
+        ├── 🤖 Multi-Agent Debate Module: (Drafting Agent ➔ Critic/Auditor Agent ➔ Refiner Agent tự gọt giũa đáp án ngầm < 1s)
+        ├── 📊 Excel & Data Agent: Sử dụng `openpyxl` / `pandas` tự động sinh file Excel chứa công thức tính toán phức tạp
+        ├── 🚀 Vibercode Builder Agent: Tự động đóng gói, sinh source code ứng dụng/phần mềm hoàn chỉnh theo yêu cầu
+        └── 🧪 Tester Agent: Sinh test case & ma trận kiểm thử kèm nút Copy Bảng
+        │
+        ▼
+[Enterprise Tool Registry & Human-in-the-Loop Approval]
+        ├── Database & ERP Connectors (Đọc/ghi dữ liệu an toàn)
+        ├── File Generator Engine (Xuất Word, Excel có công thức, PDF)
+        └── Pending Approval Dashboard / AST Self-Evolving Code Patcher (Sếp duyệt trước khi vá trực tiếp vào source code)
+Các Năng lực Đột phá "Đụng Nóc Banh Trần" của Vibercode Super-Agent:
+Test-Time Compute & Process Reward Models (MCTS): Trước khi trả lời, LangGraph kích hoạt cây tìm kiếm suy luận ngầm (Tree of Thoughts), tự chấm điểm từng bước nhỏ để loại bỏ hoàn toàn các hướng đi sai lầm trước khi hiển thị.
+Multi-Agent Debate & Self-Refinement: Đội ngũ Drafting Agent (Soạn thảo) ➔ Critic/Auditor Agent (Phản biện, soi lỗi) ➔ Refiner Agent (Gọt giũa) tranh biện ngầm dưới 1 giây để đưa ra đáp án chuẩn xác 100%.
+AST-Based Self-Evolving Software: Khi phát sinh tính năng mới, Agent tự phân tích cấu trúc mã nguồn Django qua Cây cú pháp trừu tượng (AST), tự viết Model, View, Unit Test và tự vá trực tiếp vào hệ thống sau khi được Quản lý phê duyệt.
+Tự động sinh File Excel chứa Công thức (openpyxl / pandas): Tự động viết script chạy ngầm tạo file .xlsx hoàn chỉnh có sẵn hàm Excel (SUM, VLOOKUP, IF) theo yêu cầu.
+Human-in-the-Loop Approval: Đảm bảo mọi hành động ghi file hệ thống hoặc tạo app đều qua bước kiểm duyệt của Quản lý (Admin Breakpoint) để bảo mật tuyệt đối.
+IX. ENTERPRISE AI CORPORATION ARCHITECTURE (KHIẾN KIẾN TRÚC THÀNH TẬP ĐOÀN AI TỰ TRỊ)
+[Khách hàng / Admin gửi Task / File]
+               │
+               ▼
+  [Phòng Tiếp nhận & Phân loại (Docling Ingestion & Multi-Tier Taxonomy)]
+               │
+               ▼ (Nối Đồ thị Tri thức Neo4j: Multi-Domain Routing)
+  [Ban Giám Đốc / Router Controller (LangGraph Main Graph)]
+               │
+      ┌────────┴────────────────────────┬────────────────────────┬────────────────────────┐
+      ▼                                 ▼                        ▼                        ▼
+[Phòng Kế toán & Vàng]        [Phòng Luật & Tuân thủ]    [Phòng IT & Dev Vibercode]   [Chuyên Viên AI Mới]
+(Neuro-Symbolic Z3)           (GraphRAG Search)          (AST Code Builder)           (Dynamic Agent Factory)
+      └────────┬────────────────────────┴────────────────────────┴────────────────────────┘
+               │ (Chuyển kết quả về)
+               ▼
+  [Phòng Trọng tài BA & Tranh Biện Ngầm (BA Arbiter & Debate Engine < 1s)]
+      ├── Đồng nhất kết quả ➔ Chuyển tiếp Phòng QA
+      ├── Mâu thuẫn logic ➔ BA tự suy luận sâu phân tích lỗi & chọn phương án chuẩn
+      └── Bế tắc / Không đủ căn cứ ➔ Tự sinh 2–3 Phương án trình Admin Review Queue
+               │
+               ▼
+  [Phòng Giám Sát Chất Lượng & QA (Synthetic User Testing & RAGAS Evaluator)]
+      ├── Score ≥ 8.5/10 ➔ Đẩy ra Chat Workspace (Tự động lưu Semantic Cache)
+      └── Score < 8.5/10 ➔ Trả hồ sơ về cho BA / Chuyên viên làm lại
+Các Quy trình Vận hành Chuyên biệt của Tập đoàn AI:
+Phòng Tiếp Nhận & Ingestion (Docling + Taxonomy Engine): Bóc tách tài liệu phức tạp, tự động gán cấu trúc trích dẫn đa tầng [Doanh Nghiệp / Phân Hệ] > [Domain] > [Sub-Domain] > [Chương X] > [Điều Y] > [Mục Z / Sheet Name] và nạp vào Neo4j Graph Database.
+Ban Giám Đốc & Phân Quyền Phòng Ban (LangGraph Sub-Graphs): Mỗi phòng ban (Kế toán, Luật, IT Dev, Thẩm định) vận hành như một StateGraph độc lập với Prompt và Toolset tối ưu riêng.
+Phòng Trọng Tài BA & Tranh Biện Ngầm (BA Arbiter): Giải quyết mâu thuẫn giữa các nhân viên AI. Trường hợp bế tắc không đủ dữ liệu, BA chủ động phân tích các phương án và tạo phiếu đề xuất trình Admin duyệt.
+Phòng QA & Chấm Điểm Tự Động (Synthetic QA & RAGAS Evaluator): Giả lập người dùng thật để kiểm thử và chấm điểm câu trả lời ngầm trước khi hiển thị. Chỉ những câu trả lời đạt chuẩn ($\ge 8.5/10$) mới được xuất màn hình và ghi nhận vào Semantic Cache.
+Dynamic Agent Factory (Tự Sinh Phòng Ban & Chuyên Viên Mới): Khi tiếp nhận lĩnh vực nghiệp vụ mới chưa có trong hệ thống, AI tự thiết kế Prompt, định nghĩa Toolset, ghi nhận phòng ban mới vào Django DB (DepartmentRegistry) và mở rộng cây sơ đồ LangGraph tự động.

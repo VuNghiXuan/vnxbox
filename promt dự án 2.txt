@@ -1,0 +1,111 @@
+vnxbox-architecture-spec
+Bản chỉ dẫn kiến trúc, quy trình hệ thống, luồng tra cứu Hybrid Search, Secure Sandbox, Active Learning (RLHF), LangGraph Multi-Agent và Super-Agent Vibercode của dự án vnxBox Enterprise (Build 2026). Dùng để tra cứu hoặc làm tài liệu chuẩn khi cần phát triển, mở rộng dự án.
+
+Instructions
+📜 BẢN CHỈ DẪN KIẾN TRÚC & QUY TRÌNH HỆ THỐNG (BUILD 2026 "ĐỤNG NÓC BANH TRẦN" ULTIMATE AGI SPEC)
+UNIVERSAL B2B LOCAL AI PLATFORM — VNXBOX ENTERPRISE & VIBERCODE
+
+(Hệ thống AI Tự trị Đa ngành cấp độ AGI Local-First: Enterprise AI Corporation Architecture, Hardware-Adaptive Routing, Neuro-Symbolic Solver, Test-Time Compute MCTS, GraphRAG, Multi-Agent Debate & Self-Refinement, Synthetic QA & RAGAS Evaluation, Docling Layout Parsing, QLoRA / CPU Fine-Tuning, Advanced Semantic Caching, Secure Sandbox & Self-Evolving AST Code Generation)
+
+📌 I. NGUYÊN TẮC CỐT LÕI & CÔNG CỤ TỐI ƯU (CORE PRINCIPLES & TECH STACK)
+1. Kiến trúc Local-First & Headless (Nguyên tắc & Thư viện)
+Nguyên tắc: 100% Offline & Bảo mật tuyệt đối. Dữ liệu doanh nghiệp không bao giờ rời khỏi mạng LAN. Tách biệt hoàn toàn Core Engine (Django API / WebSocket) và Frontend (Admin Dashboard, Webview).
+Thư viện & Công cụ hỗ trợ:
+LLM & Embedding Local: Ollama, qwen2.5-coder (code/toán học), llama3 / gemma2 (tổng hợp), bge-m3 (Vector Embeddings).
+Core Backend: Django, Django REST Framework (DRF), Django Channels (WebSocket real-time).
+2. Triệt tiêu Ảo giác & Tuyệt đối Không Hardcode (Zero-Hallucination & Neuro-Symbolic)
+Nguyên tắc: Cấm AI nhẩm số & Cấm Hardcode Logic. Mọi biến động định mức, công thức tài chính đều phải được sinh động (Dynamic Generation).
+Công cụ bên ngoài thông minh: Tích hợp Neuro-Symbolic Solver (Z3 Theorem Prover / SymPy) bên trong môi trường cô lập để đạt độ chính xác 100% về mặt toán học, triệt tiêu sai số xác suất.
+Thư viện Sandbox: Thực thi qua knowledge/sandbox.py (Giới hạn tài nguyên: Timeout 2–3s, RAM 128MB, chặn tuyệt đối các module độc hại os, subprocess, socket).
+3. Minh bạch Trích dẫn & Định vị Sâu (Deep Traceability)
+Nguyên tắc: Trích dẫn tường minh cấu trúc đa tầng: [Doanh Nghiệp / Phân Hệ] > [Domain Lĩnh Vực] > [Sub-Domain Nghiệp Vụ] > [Chương X] > [Điều Y] > [Mục Z / Sheet Name]. Hỗ trợ 1-Click Edit trỏ thẳng đến Admin và lưu lịch sử KnowledgeHistory cho phép so sánh Diff & Rollback 1-Click.
+4. Quy chuẩn Code, Tách File & Chú thích Đường dẫn
+Nguyên tắc: Mọi file mã nguồn xuất bản bắt buộc ghi rõ tên file và đường dẫn chú thích đầy đủ ở dòng đầu tiên. Khi file vượt quá 300 dòng, bắt buộc phải phân tách thành các sub-modules/services độc lập.
+⚙️ II. CHIẾN LƯỢC PHẦN CỨNG & ĐỊNH TUYẾN ĐA MÔ HÌNH (SMART RESOURCE ENGINE)
+1. Khảo sát Phần cứng & Tự động Cấu hình (Hardware Auto-Profiling)
+Nguyên tắc: Hệ thống tự động quét RAM, CPU, GPU (psutil + torch.cuda) để phân loại tầng phần cứng (High-End, Mid-Range, Low-End), từ đó tự động tinh chỉnh num_ctx, chunk_size và lựa chọn model Ollama phù hợp, triệt tiêu hoàn toàn lỗi ReadTimeoutError.
+2. Định tuyến Đa Mô hình Chuyên biệt (Multi-Model Routing)
+Model Code & Toán học (qwen2.5-coder): Xử lý logic, viết script Python, dựng phần mềm, sinh Excel có công thức.
+Model Ngôn ngữ (llama3 / gemma2): Bóc tách tài liệu thô, phân cấp taxonomy, sinh FAQ Radar.
+Model Siêu nhẹ (qwen2.5:1.5b): Tóm tắt bộ nhớ lịch sử chat (Sliding Window Memory) duy trì phản hồi dưới 1 giây.
+📚 III. BÓC TÁCH TÀI LIỆU, CÂY TRI THỨC & GRAPH RAG (DOCLING + NEO4J)
+1. Bóc tách Tài liệu Thông minh bằng Thư viện Mở Docling (by IBM)
+Nguyên tắc: Nhận diện hoàn hảo cấu trúc Markdown, tiêu đề phân cấp, bảng biểu phức tạp (Tables) và công thức toán học từ file PDF, Word, Scan (tích hợp OCR).
+Excel/CSV (Sheet-Aware): Tự động bóc tách từng Sheet thành các Chapter riêng biệt qua thư viện pandas / openpyxl, bảo toàn nguyên vẹn ma trận dữ liệu 2D.
+2. GraphRAG (Knowledge Graph + Vector RAG Kết Hợp)
+Nguyên tắc: Khắc phục hạn chế RAG thuần bị đứt mạch ngữ cảnh khi truy vấn đa bước (Multi-hop Reasoning).
+Công cụ hỗ trợ: Xây dựng Đồ thị Tri thức bằng Microsoft GraphRAG hoặc NetworkX kết hợp cơ sở dữ liệu đồ thị Neo4j. AI tự động trích xuất thực thể và quan hệ để "đi bộ" trên đồ thị kết hợp tìm kiếm vector, gom toàn bộ bức tranh móc xích phức tạp về cho LLM.
+⚖️ IV. QUY TẮC RÀNG BUỘC TRÁCH NHIỆM & PHÂN ĐỊNH PHÒNG BAN AI (GOVERNANCE POLICY)
+1. Điều 1: Chống Cắt Xén Văn Bản Pháp Luật (Anti-Truncation Rule)
+Nguyên tắc nghiêm ngặt: Các Chuyên viên AI thuộc phòng Pháp chế & Tuân thủ tuyệt đối không được tóm tắt cục bộ hoặc lược bỏ các điều khoản nguyên thủy khi xử lý văn bản pháp luật, nghị định, quy chế nội bộ. Phải giữ nguyên vẹn cấu trúc Chương, Điều, Khoản, Mục.
+2. Điều 2: Khóa Cứng Ngữ Cảnh & Gán Nhãn Độc Quyền (Domain Anchoring)
+Nguyên tắc: Dynamic Tagging Agent (Thuộc phòng HR_ADMIN) có trách nhiệm đọc sâu nội dung để gán chính xác domain_name và sub_domain. Cấm tuyệt đối gán nhầm domain (Ví dụ: Tài liệu Xây dựng không bao giờ được phép gán nhầm sang Kế toán - Tài chính), triệt tiêu hoàn toàn hiện tượng "vàng ngáo" hay pha trộn số liệu chéo ngành.
+🔄 V. CƠ CHẾ TỰ HOÀN THIỆN, ACTIVE LEARNING & SELF-HEALING KHI "DISLIKE"
+Khi người dùng phát hiện câu trả lời sai sót và bấm nút 👎 Dislike (Báo lỗi & Mổ xẻ), hệ thống kích hoạt chuỗi tự vận hành khép kín (Self-Healing Loop):
+
+Truy vết Thủ phạm (Root-Cause Traceability): Hệ thống đọc lại citations trong metadata của tin nhắn (chapter_id, domain_name) để xác định chính xác phân đoạn dữ liệu và Mã nhân viên AI (Agent ID) đã cung cấp thông tin sai lệch hoặc bị gán nhãn nhầm.
+Kỷ luật & Sửa lỗi (Re-tagging & Correction): Triệu tập Agent phụ trách phòng ban đó kết hợp với HR_00 (Trưởng phòng Nhân sự) để phân tích nguyên nhân, cập nhật lại nhãn nghiệp vụ chính xác trong bảng KnowledgeChapter.
+Tự động Re-index Vector (Auto Re-Indexing): Django Signals (post_save) tự động kích hoạt: Xóa bỏ vector cũ rác trong ChromaDB, bóc tách và sinh embedding chuẩn xác 100% cho nội dung mới. Lần truy vấn sau, chuyên viên AI phụ trách sẽ trả lời chuẩn xác tuyệt đối.
+🚀 VI. SUPER-AGENT VIBERCODE & LANGGRAPH MULTI-AGENT ORCHESTRATION
+[User Task Request / File / URL]
+        │
+        ▼
+[Planner Agent: Phân rã công việc thành DAG Tasks]
+        │
+        ▼
+[LangGraph Multi-Role Orchestrator (Stateful & Cyclic Graph)]
+        ├── 📋 Classifier & Ingestion Agent: Phân loại tài liệu, bóc tách cấu trúc bằng Docling
+        ├── ⚖️ Legal & Compliance Agent: Kiểm tra quy chế, rà soát rủi ro tuân thủ
+        ├── 🧠 Test-Time Compute & MCTS Engine: AI tự nháp, kiểm chứng từng bước ngầm (Step-by-step verification) trước khi xuất đáp án
+        ├── 💻 Dev & Sandbox Agent: Viết code động, tự sửa file & chạy Sandbox an toàn
+        ├── 🤖 Multi-Agent Debate Module: (Drafting Agent ➔ Critic/Auditor Agent ➔ Refiner Agent tự gọt giũa đáp án ngầm < 1s)
+        ├── 📊 Excel & Data Agent: Sử dụng `openpyxl` / `pandas` tự động sinh file Excel chứa công thức tính toán phức tạp
+        ├── 🚀 Vibercode Builder Agent: Tự động đóng gói, sinh source code ứng dụng/phần mềm hoàn chỉnh theo yêu cầu
+        └── 🧪 Tester Agent: Sinh test case & ma trận kiểm thử kèm nút Copy Bảng
+        │
+        ▼
+[Enterprise Tool Registry & Human-in-the-Loop Approval]
+        ├── Database & ERP Connectors (Đọc/ghi dữ liệu an toàn)
+        ├── File Generator Engine (Xuất Word, Excel có công thức, PDF)
+        └── Pending Approval Dashboard / AST Self-Evolving Code Patcher (Sếp duyệt trước khi vá trực tiếp vào source code)
+Các Năng lực Đột phá "Đụng Nóc Banh Trần" của Vibercode Super-Agent:
+Test-Time Compute & Process Reward Models (MCTS): Trước khi trả lời, LangGraph kích hoạt cây tìm kiếm suy luận ngầm (Tree of Thoughts), tự chấm điểm từng bước nhỏ để loại bỏ các hướng đi sai lầm trước khi hiển thị.
+Multi-Agent Debate & Self-Refinement: Đội ngũ Drafting Agent (Soạn thảo) ➔ Critic/Auditor Agent (Phản biện, soi lỗi) ➔ Refiner Agent (Gọt giũa) tranh biện ngầm dưới 1 giây để đưa ra đáp án chuẩn xác 100%.
+AST-Based Self-Evolving Software: Khi phát sinh tính năng mới, Agent tự phân tích cấu trúc mã nguồn Django qua Cây cú pháp trừu tượng (AST), tự viết Model, View, Unit Test và tự vá trực tiếp vào hệ thống sau khi được Quản lý phê duyệt.
+Tự động sinh File Excel chứa Công thức (openpyxl / pandas): Tự động viết script chạy ngầm tạo file .xlsx hoàn chỉnh có sẵn hàm Excel (SUM, VLOOKUP, IF) theo yêu cầu.
+Human-in-the-Loop Approval: Đảm bảo mọi hành động ghi file hệ thống hoặc tạo app đều qua bước kiểm duyệt của Quản lý (Admin Breakpoint) để bảo mật tuyệt đối.
+🏢 VII. ENTERPRISE AI CORPORATION ARCHITECTURE (TẬP ĐOÀN AI TỰ TRỊ)
+[Khách hàng / Admin gửi Task / File]
+               │
+               ▼
+  [Phòng Tiếp nhận & Phân loại (Docling Ingestion & Multi-Tier Taxonomy)]
+               │
+               ▼ (Nối Đồ thị Tri thức Neo4j: Multi-Domain Routing)
+  [Ban Giám Đốc / Router Controller (LangGraph Main Graph)]
+               │
+      ┌────────┴────────────────────────┬────────────────────────┬────────────────────────┐
+      ▼                                 ▼                        ▼                        ▼
+[Phòng Kế toán & Vàng]        [Phòng Luật & Tuân thủ]    [Phòng IT & Dev Vibercode]   [Chuyên Viên AI Mới]
+(Neuro-Symbolic Z3)           (GraphRAG Search)          (AST Code Builder)           (Dynamic Agent Factory)
+      └────────┬────────────────────────┴────────────────────────┴────────────────────────┘
+               │ (Chuyển kết quả về)
+               ▼
+  [Phòng Trọng tài BA & Tranh Biện Ngầm (BA Arbiter & Debate Engine < 1s)]
+      ├── Đồng nhất kết quả ➔ Chuyển tiếp Phòng QA
+      ├── Mâu thuẫn logic ➔ BA tự suy luận sâu phân tích lỗi & chọn phương án chuẩn
+      └── Bế tắc / Không đủ căn cứ ➔ Tự sinh 2–3 Phương án trình Admin Review Queue
+               │
+               ▼
+  [Phòng Giám Sát Chất Lượng & QA (Synthetic User Testing & RAGAS Evaluator)]
+      ├── Score ≥ 8.5/10 ➔ Đẩy ra Chat Workspace (Tự động lưu Semantic Cache)
+      └── Score < 8.5/10 ➔ Trả hồ sơ về cho BA / Chuyên viên làm lại
+Các Quy trình Vận hành Chuyên biệt của Tập đoàn AI:
+Phòng Tiếp Nhận & Ingestion (Docling + Taxonomy Engine): Bóc tách tài liệu phức tạp, tự động gán cấu trúc trích dẫn đa tầng [Doanh Nghiệp / Phân Hệ] > [Domain] > [Sub-Domain] > [Chương X] > [Điều Y] > [Mục Z / Sheet Name] và nạp vào Neo4j Graph Database.
+Phân Rã Chuyên Viên Chuyên Môn Sâu (Hierarchical Sub-Agents):
+Phòng Kế toán - Tài chính: Kế Toán Trưởng (Chief Accountant - Ký duyệt/Validator), Kế Toán Tổng Hợp (Thuế/Báo cáo cân đối), Kế Toán Kho & Vàng Bạc (Hao hụt/Casting loss/Chênh lệch giá theo giờ).
+Phòng Kho Vận & Định Mức: Thủ Kho Hệ Thống (Digital Warehouse - Lịch sử luân chuyển/Barcode/RFID), Chuyên Gia Kiểm Định (Karat & Material Inspector - Hàm lượng tuổi vàng 99.99%/75%, định mức vật tư).
+Phòng Kinh Doanh & Định Giá: Chuyên Gia Định Giá Động (Live Pricing - Cập nhật giá vàng/Spread mua-bản), Quản Lý Chiết Khấu (Discount & Agency Policy - Công nợ/Hoa hồng bậc thang sỉ).
+Phòng Pháp Chế & Kiểm Toán Nội Bộ: Kiểm Toán Viên Nội Bộ (Internal Auditor - Rà soát chiết khấu/xuất kho bất thường), Chuyên Gia Tuân Thủ (Regulatory Compliance - Luật doanh nghiệp/Chống rửa tiền).
+Cơ Chế Khởi Tạo Prompt Chuyên Biệt & Dynamic Agent Factory: Mỗi Chuyên viên/Sub-Agent được tự động sinh System Prompt chuẩn hóa, sở hữu bộ Toolset cô lập. Khi gặp domain mới, Agent Factory tự thiết kế Prompt, gán Toolset và đăng ký vào Django DB (DepartmentRegistry).
+Phòng Trọng Tài BA & Tranh Biện Ngầm (BA Arbiter): Giải quyết mâu thuẫn giữa các chuyên viên AI. Trường hợp bế tắc không đủ dữ liệu, BA chủ động phân tích các phương án và tạo phiếu đề xuất trình Admin duyệt.
+Phòng QA & Chấm Điểm Tự Động (Synthetic QA & RAGAS Evaluator): Giả lập người dùng thật để kiểm thử và chấm điểm câu trả lời ngầm trước khi hiển thị. Chỉ những câu trả lời đạt chuẩn ($\ge 8.5/10$) mới được xuất màn hình và ghi nhận vào Semantic Cache.

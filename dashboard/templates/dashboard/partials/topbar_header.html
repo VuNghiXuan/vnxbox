@@ -1,0 +1,41 @@
+<!-- File path: templates/dashboard/partials/topbar_header.html -->
+<!-- Chú thích: Header trên cùng tích hợp Logo GIF Vũ Nghi Xuân và Badge trạng thái -->
+
+{% load static %}
+<header
+    class="h-16 border-b border-slate-800 bg-slate-950/90 backdrop-blur px-6 flex justify-between items-center z-10 shrink-0 shadow-lg">
+    <!-- Khu vực bên trái: Logo động Vũ Nghi Xuân + Tiêu đề + Huy hiệu Offline -->
+    <div class="flex items-center gap-4">
+        <div class="flex items-center">
+            <img src="{% static 'dashboard/vuxuan_animated_logo.gif' %}" alt="Vũ Nghi Xuân Logo"
+                class="h-9 w-auto rounded-lg border border-emerald-500/40 shadow-md object-cover">
+        </div>
+
+        <div class="h-5 w-[1px] bg-slate-800"></div>
+
+        <div class="flex items-center gap-3">
+            <h1 class="text-sm font-bold text-white tracking-wide"
+                x-text="currentView === 'chat' ? 'Cổng Chat Thông Minh & Tra Cứu Quy Định' : 'Quản Trị Kho Tri Thức & Biên Soạn Tài Liệu'">
+            </h1>
+
+            <div
+                class="hidden md:flex items-center gap-1.5 px-3 py-1 bg-emerald-950/80 border border-emerald-500/40 rounded-full shadow-inner">
+                <span class="flex h-2 w-2 relative">
+                    <span
+                        class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                <span class="text-[10px] font-mono font-bold text-emerald-400 tracking-wide uppercase">
+                    100% Offline & Secure Sandbox
+                </span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Khu vực bên phải: Phiên bản hệ thống -->
+    <div class="flex items-center gap-3">
+        <span class="text-xs text-slate-400 font-mono bg-slate-900 border border-slate-800 px-3 py-1 rounded-lg">
+            vnxBox Enterprise v2.6
+        </span>
+    </div>
+</header>

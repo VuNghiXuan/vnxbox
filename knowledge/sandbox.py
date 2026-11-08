@@ -115,3 +115,18 @@ def run_secure_sandbox(code_str: str, context_dict: dict = None, timeout_seconds
         "output": return_dict.get("output", ""),
         "variables": dict(return_dict.get("variables", {}))
     }
+
+
+def run_python_sandbox(code_str: str, context_dict: dict = None, timeout_seconds: int = 3) -> dict:
+    """
+    Alias wrapper trỏ về hàm run_secure_sandbox chính để tương thích ngược 
+    với các sub-graphs phòng ban gọi hàm run_python_sandbox.
+    """
+    return run_secure_sandbox(code_str=code_str, context_dict=context_dict, timeout_seconds=timeout_seconds)
+
+# Bổ sung hàm alias này vào cuối file knowledge/sandbox.py để tương thích ngược:
+def run_in_sandbox(code_str: str, context_dict: dict = None, timeout_seconds: int = 3) -> dict:
+    """
+    Alias wrapper cho run_secure_sandbox để hỗ trợ các module gọi hàm run_in_sandbox.
+    """
+    return run_secure_sandbox(code_str=code_str, context_dict=context_dict, timeout_seconds=timeout_seconds)

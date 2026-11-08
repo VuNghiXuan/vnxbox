@@ -1,0 +1,210 @@
+<!-- File path: templates/dashboard/partials/chat_view.html -->
+<!-- Chú thích: Giao diện Cổng Chat Vận Hành tích hợp Ngăn xếp Trích dẫn, Secure Sandbox & Self-Learning Dislike Modal -->
+
+<div class="flex-1 flex flex-col bg-slate-900 overflow-hidden min-h-0"
+    :style="currentView === 'chat' ? 'display: flex;' : 'display: none;'">
+
+    <!-- Khung chứa tin nhắn có cuộn dọc độc lập -->
+    <div x-ref="chatContainer" class="flex-1 overflow-y-auto p-6 space-y-6 min-h-0 relative">
+
+        <!-- Vòng lặp tin nhắn -->
+        <template x-for="(msg, index) in messages" :key="msg.id || index">
+            <div :class="msg.sender === 'user' ? 'flex justify-end' : 'flex items-start gap-3'">
+
+                <!-- Avatar AI -->
+                <template x-if="msg.sender === 'ai'">
+                    <div
+                        class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shrink-0">
+                        AI</div>
+                </template>
+
+                <!-- Nội dung tin nhắn -->
+                <div
+                    :class="msg.sender === 'user' ? 'bg-emerald-600 text-white rounded-2xl rounded-tr-sm px-5 py-3 max-w-xl text-sm shadow' : 'bg-slate-950 border border-slate-800 text-slate-200 rounded-2xl rounded-tl-sm px-5 py-4 max-w-3xl text-sm shadow-md space-y-3'">
+
+                    <!-- Thông tin hệ thống ngầm (Chỉ hiện khi điểm QA thấp hoặc cần thiết) -->
+                    <template x-if="msg.sender === 'ai' && msg.qa_score && msg.qa_score < 8.5">
+                        <div
+                            class="flex items-center justify-between pb-2 border-b border-amber-800/50 text-[10px] font-mono text-amber-400">
+                            <span>⚠️ Cảnh báo chất lượng thấp (QA Score: <span x-text="msg.qa_score"></span>/10) - Đã
+                                chuyển log sang War Room để BA kiểm chứng.</span>
+                        </div>
+                    </template>
+
+                    <!-- Nội dung chính câu trả lời -->
+                    <div class="whitespace-pre-wrap leading-relaxed font-mono text-xs" x-text="msg.text"></div>
+
+                    <!-- KẾT QUẢ THỰC THI SECURE SANDBOX (NẾU CÓ) -->
+                    <template x-if="msg.sandbox_execution && msg.sandbox_execution.success">
+                        <div class="p-3 bg-slate-900 border border-emerald-500/30 rounded-xl space-y-2 font-mono">
+                            <div class="flex items-center justify-between">
+                                <div
+                                    class="text-[10px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+                                    <span>🛡️ Secure Sandbox Execution Results</span>
+                                </div>
+                                <button @click="copyTableContent(msg.sandbox_execution.output)"
+                                    class="text-[10px] text-teal-400 hover:text-teal-300 bg-teal-950/50 px-2 py-0.5 rounded border border-teal-800/50 transition flex items-center gap-1">
+                                    <span>📋 Copy kết quả</span>
+                                </button>
+                            </div>
+                            <div class="text-slate-300 text-[11px]" x-text="msg.sandbox_execution.output"></div>
+                        </div>
+                    </template>
+
+                    <!-- NGĂN XẾP TRÍCH DẪN & ĐỐI SOÁT ĐA NGHIỆP VỤ (ACCORDION STACK) -->
+                    <template x-if="msg.citations && msg.citations.length > 0">
+                        <div class="pt-2 border-t border-slate-800/80 space-y-2">
+                            <!-- Nút bấm Mở/Cất Ngăn xếp nằm cạnh khu vực tương tác -->
+                            <div class="flex items-center justify-between">
+                                <button @click="msg.showStack = !msg.showStack"
+                                    class="text-[11px] text-teal-400 hover:text-teal-300 font-mono flex items-center gap-1.5 bg-teal-950/40 px-3 py-1 rounded-lg border border-teal-800/60 transition">
+                                    <span>📚 Ngăn xếp căn cứ tài liệu (<span x-text="msg.citations.length"></span> nguồn
+                                        đa nghiệp vụ)</span>
+                                    <span x-text="msg.showStack ? '▲ Cất lại' : '▼ Mở ra xem'"></span>
+                                </button>
+                            </div>
+
+                            <!-- Nội dung Ngăn xếp (Ẩn/Hiện linh hoạt) -->
+                            <div x-show="msg.showStack" style="display: none;"
+                                class="space-y-1.5 pl-2 border-l-2 border-teal-500/40 my-2">
+                                <template x-for="cite in msg.citations">
+                                    <div
+                                        class="bg-slate-900 hover:bg-slate-800 p-2.5 rounded-lg border border-slate-800 text-[11px] font-mono space-y-1 transition">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-emerald-400 font-bold"
+                                                x-text="cite.domain_name + ' > ' + cite.sub_domain"></span>
+                                            <span @click="jumpToEdit(cite.chapter_id)"
+                                                class="text-indigo-400 hover:underline cursor-pointer">✏️ Sửa đổi tri
+                                                thức</span>
+                                        </div>
+                                        <div class="text-slate-300" x-text="'📖 ' + cite.title"></div>
+                                        <div class="text-slate-500 text-[10px]"
+                                            x-text="'📂 File nguồn: ' + cite.source_file"></div>
+                                    </div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- THANH TƯƠNG TÁC (THẢ TIM, LIKE, DISLIKE) & ĐIỀU HƯỚNG WAR ROOM -->
+                    <template x-if="msg.sender === 'ai'">
+                        <div
+                            class="flex items-center justify-between pt-3 border-t border-slate-800/60 text-xs text-slate-400 font-mono">
+                            <div class="flex items-center gap-2">
+                                <!-- Nút Thả Tim -->
+                                <button @click="reactMessage(index, 'love')"
+                                    :class="msg.reaction === 'love' ? 'text-rose-500 bg-rose-950/40 border-rose-800' : 'hover:text-rose-400 border-slate-800'"
+                                    class="px-2.5 py-1 rounded-lg border bg-slate-900 transition flex items-center gap-1 text-[11px]">
+                                    <span>❤️</span>
+                                    <span x-text="msg.loves || 0"></span>
+                                </button>
+
+                                <!-- Nút Like -->
+                                <button @click="reactMessage(index, 'like')"
+                                    :class="msg.reaction === 'like' ? 'text-emerald-400 bg-emerald-950/40 border-emerald-800' : 'hover:text-emerald-300 border-slate-800'"
+                                    class="px-2.5 py-1 rounded-lg border bg-slate-900 transition flex items-center gap-1 text-[11px]">
+                                    <span>👍</span>
+                                    <span x-text="msg.likes || 0"></span>
+                                </button>
+
+                                <!-- NÚT DISLIKE TRONG THANH TƯƠNG TÁC (Truyền đúng msg.id từ backend) -->
+                                <button @click="handleDislike(msg.id)"
+                                    :class="msg.reaction === 'dislike' ? 'text-amber-400 bg-amber-950/40 border-amber-800' : 'hover:text-amber-300 border-slate-800'"
+                                    class="px-2.5 py-1 rounded-lg border bg-slate-900 transition flex items-center gap-1 text-[11px]"
+                                    title="Bấm Dislike để báo lỗi và mổ xẻ ngầm">
+                                    <span>👎 Báo lỗi & Mổ xẻ</span>
+                                </button>
+                            </div>
+
+                            <span class="text-[10px] text-slate-500">vnxBox Self-Learning</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </template>
+
+        <!-- HIỆU ỨNG ĐỘNG ĐANG XỬ LÝ -->
+        <template x-if="isThinking">
+            <div class="flex items-start gap-3 my-3">
+                <div
+                    class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center text-white text-xs font-bold shadow-lg shrink-0">
+                    AI</div>
+                <div
+                    class="bg-slate-950 border border-slate-800 rounded-2xl px-5 py-4 max-w-xl shadow-md text-xs space-y-3 font-mono">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-2 w-2 relative">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span class="text-emerald-400 font-semibold uppercase">Hệ thống đa tác nhân đang xử lý...</span>
+                    </div>
+                    <div class="text-slate-300 flex items-center gap-2">
+                        <span class="text-teal-400">▶</span>
+                        <span x-text="thinkingSteps[currentStepIndex]"></span>
+                    </div>
+                </div>
+            </div>
+        </template>
+
+        <div x-ref="bottomAnchor"></div>
+    </div>
+
+    <!-- Ô nhập câu hỏi Chat -->
+    <div class="p-4 bg-slate-950 border-t border-slate-800 shrink-0">
+        <form @submit.prevent="sendMessage()" class="max-w-4xl mx-auto flex gap-3">
+            <input type="text" x-model="question"
+                placeholder="Nhập câu hỏi quy định đa nghiệp vụ, tính toán tài chính..."
+                class="flex-1 bg-slate-900 border border-slate-800 rounded-xl px-4 py-3 text-xs text-slate-100 focus:outline-none focus:border-emerald-500 font-mono">
+            <button type="submit" :disabled="isThinking"
+                class="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl shadow transition flex items-center gap-2">
+                <span>Gửi yêu cầu</span>
+            </button>
+        </form>
+    </div>
+</div>
+
+
+<!-- ========================================== -->
+<!-- MODAL POPUP NHẬP MÔ TẢ LỖI KHI BẤM DISLIKE  -->
+<!-- ========================================== -->
+<div x-show="showDislikeModal" style="display: none;"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+    <div class="bg-slate-900 border border-slate-700 w-full max-w-lg rounded-2xl p-6 shadow-2xl space-y-4 font-mono">
+
+        <!-- Tiêu đề Modal -->
+        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold text-amber-400 flex items-center gap-2">
+                <span>⚠️ Báo lỗi & Yêu cầu AI BA Mổ Xẻ</span>
+            </h3>
+            <button @click="showDislikeModal = false" class="text-slate-400 hover:text-white text-sm">✕</button>
+        </div>
+
+        <!-- Nội dung hướng dẫn -->
+        <div class="text-xs text-slate-300 space-y-2">
+            <p>Vui lòng mô tả chi tiết vấn đề sai sót trong câu trả lời của AI (Ví dụ: <em class="text-emerald-400">"Hệ
+                    thống đang hiểu 610 là số chỉ vàng thay vì là loại vàng/tuổi vàng"</em>).</p>
+            <p class="text-[11px] text-slate-400">Hệ thống sẽ chạy ngầm bức thư chỉ đạo cho AI BA, cập nhật lại quy tắc
+                ngầm và Re-index tri thức.</p>
+        </div>
+
+        <!-- Ô nhập ghi chú -->
+        <div>
+            <textarea x-model="dislikeNote" rows="4" placeholder="Nhập mô tả vấn đề sai và hướng dẫn AI khắc phục..."
+                class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-slate-100 focus:outline-none focus:border-amber-500"></textarea>
+        </div>
+
+        <!-- Nút hành động -->
+        <div class="flex justify-end gap-3 pt-2">
+            <button @click="showDislikeModal = false"
+                class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs transition">
+                Hủy bỏ
+            </button>
+            <button @click="submitDislikeFeedback()"
+                class="px-5 py-2 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl text-xs shadow transition flex items-center gap-2">
+                <span>🚀 Gửi ý kiến & Chỉ đạo AI BA</span>
+            </button>
+        </div>
+
+    </div>
+</div>

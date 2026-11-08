@@ -1,11 +1,10 @@
 # File path: knowledge/hybrid_search.py
 # Chú thích: Công cụ tìm kiếm kết hợp thực tế (Hybrid Search & Multi-Tier Filtering) cho vnxBox Enterprise.
-# Tích hợp ChromaDB Vector Database, Keyword Search (BM25 mô phỏng) và Anti-Hallucination Threshold.
+# Tích hợp ChromaDB Vector Database, lọc Metadata theo Company / Domain và Anti-Hallucination Threshold.
 
-import re
 import logging
 import chromadb
-from typing import List, Dict, Any, Optional
+from typing import Dict, Any, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -20,18 +19,17 @@ def get_chroma_collection():
 class HybridSearchEngine:
     """
     Công cụ tìm kiếm kết hợp (Hybrid Search & Multi-Tier Filtering) cho vnxBox Enterprise:
-    - Tầng 1: Lọc cứng theo Metadata (domain_name).
-    - Tầng 2: Tìm kiếm từ khóa (Keyword Search / BM25).
-    - Tầng 3: Tìm kiếm vector ngữ nghĩa thực tế trên ChromaDB.
-    - Kiểm soát ngưỡng chống ảo giác (Anti-Hallucination Threshold < 0.70).
+    - Tầng 1: Lọc cứng theo Metadata (company_code, domain_name).
+    - Tầng 2: Tìm kiếm vector ngữ nghĩa thực tế trên ChromaDB.
+    - Tầng 3: Kiểm soát ngưỡng chống ảo giác (Anti-Hallucination Threshold < 0.70).
     """
 
     def __init__(self, similarity_threshold: float = 0.70):
         self.similarity_threshold = similarity_threshold
 
-    def search(self, query: str, domain_name: Optional[str] = None, top_k: int = 4) -> Dict[str, Any]:
+    def search(self, query: str, company_code: Optional[str] = None, domain_name: Optional[str] = None, top_k: int = 4) -> Dict[str, Any]:
         """
-        Thực thi quy trình Hybrid Search thực tế: Vector Query từ ChromaDB -> Lọc Metadata -> Anti-Hallucination Check.
+        Thực thi quy trình Hybrid Search: Vector Query từ ChromaDB -> Lọc Metadata đa tầng -> Anti-Hallucination Check.
         """
         if not query or not query.strip():
             return {
@@ -44,8 +42,18 @@ class HybridSearchEngine:
         try:
             collection = get_chroma_collection()
             
-            # Xây dựng điều kiện lọc cứng Metadata nếu có domain_name
-            where_filter = {"domain_name": domain_name.strip()} if domain_name else None
+            # Xây dựng điều kiện lọc cứng Metadata linh hoạt theo Company và Domain
+            filter_conditions = []
+            if company_code and company_code.strip() != "GENERAL":
+                filter_conditions.append({"company_code": company_code.strip().upper()})
+            if domain_name and domain_name.strip():
+                filter_conditions.append({"domain_name": domain_name.strip()})
+
+            where_filter = None
+            if len(filter_conditions) == 1:
+                where_filter = filter_conditions[0]
+            elif len(filter_conditions) > 1:
+                where_filter = {"$and": filter_conditions}
 
             # Truy vấn Vector Semantic Search từ ChromaDB
             query_params = {
@@ -59,7 +67,7 @@ class HybridSearchEngine:
             
             documents = vector_res.get("documents", [[]])[0]
             metadatas = vector_res.get("metadatas", [[]])[0]
-            distances = vector_res.get("distances", [[]])[0]  # ChromaDB dùng distance (C càng nhỏ càng gần)
+            distances = vector_res.get("distances", [[]])[0]
 
             if not documents:
                 logger.info(f"HybridSearch: Không tìm thấy kết quả nào cho query: '{query}'")
@@ -72,14 +80,14 @@ class HybridSearchEngine:
 
             valid_results = []
             for doc, meta, dist in zip(documents, metadatas, distances):
-                # Quy đổi Cosine Distance sang Similarity Score (Giả định L2/Cosine chuẩn hóa: sim = 1 - dist hoặc tương đương)
-                # Nếu ChromaDB trả về khoảng cách, ta quy đổi thành độ tương đồng [0.0 - 1.0]
+                # Quy đổi khoảng cách sang Similarity Score [0.0 - 1.0]
                 similarity_score = max(0.0, round(1.0 - (dist / 2.0), 2))
 
                 # Kiểm tra ngưỡng chống ảo giác (Anti-Hallucination Threshold >= 0.70)
                 if similarity_score >= self.similarity_threshold:
                     valid_results.append({
                         "chapter_id": meta.get("chapter_id"),
+                        "company_code": meta.get("company_code"),
                         "domain_name": meta.get("domain_name"),
                         "sub_domain": meta.get("sub_domain"),
                         "source_file": meta.get("source_file"),
@@ -119,6 +127,6 @@ class HybridSearchEngine:
 
 
 # Hàm tiện ích gọi nhanh Hybrid Search từ các module khác
-def hybrid_search(query: str, domain_name: Optional[str] = None, limit: int = 3) -> Dict[str, Any]:
+def hybrid_search(query: str, company_code: Optional[str] = None, domain_name: Optional[str] = None, limit: int = 3) -> Dict[str, Any]:
     engine = HybridSearchEngine(similarity_threshold=0.70)
-    return engine.search(query=query, domain_name=domain_name, top_k=limit)
+    return engine.search(query=query, company_code=company_code, domain_name=domain_name, top_k=limit)

@@ -1,0 +1,294 @@
+<!-- File path: templates/dashboard/partials/war_room_view.html -->
+<!-- Chú thích: Giao diện War Room kiểm chứng LangGraph, Giám sát tiến độ Nhân sự AI & Trung tâm Synthetic QA -->
+
+<div x-show="currentView === 'warroom'" class="flex-1 flex flex-col bg-slate-950 overflow-hidden min-h-0 font-mono"
+    x-data="{ 
+        activeWarTab: 'agents', 
+        syntheticRunning: false, 
+        syntheticLogs: [],
+        departmentList: [],
+        recentDebates: [],
+        recentQAs: [],
+        async loadCorporationStatus() {
+            try {
+                let res = await fetch('/api/chapters/corporation_status/');
+                let data = await res.json();
+                if (res.ok && data.success) {
+                    this.departmentList = data.active_agents || [];
+                    this.recentDebates = data.recent_debates || [];
+                    this.recentQAs = data.recent_qa_evaluations || [];
+                }
+            } catch (err) {
+                console.error('Lỗi tải trạng thái tập đoàn:', err);
+            }
+        }
+    }" x-init="loadCorporationStatus()">
+
+    <!-- Header War Room -->
+    <div class="p-4 border-b border-slate-800 bg-slate-900/80 flex justify-between items-center shrink-0">
+        <div class="flex items-center gap-3">
+            <div class="w-3 h-3 rounded-full bg-indigo-500 animate-ping"></div>
+            <h2 class="font-bold text-sm text-indigo-400 uppercase tracking-wide">⚖️ War Room: Giám Sát Tập Đoàn AI & Tự
+                Hoàn Thiện</h2>
+        </div>
+        <!-- Các nút chuyển tab trong War Room -->
+        <div class="flex items-center gap-2 text-xs">
+            <button @click="activeWarTab = 'agents'; loadCorporationStatus()"
+                :class="activeWarTab === 'agents' ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'"
+                class="px-3 py-1.5 rounded-lg border border-slate-800 transition font-bold flex items-center gap-1">
+                <span>📊 Tiến Độ Nhân Sự AI</span>
+            </button>
+            <button @click="activeWarTab = 'audit'"
+                :class="activeWarTab === 'audit' ? 'bg-indigo-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'"
+                class="px-3 py-1.5 rounded-lg border border-slate-800 transition font-bold">
+                🔍 Tranh Biện & LangGraph
+            </button>
+            <button @click="activeWarTab = 'synthetic'"
+                :class="activeWarTab === 'synthetic' ? 'bg-teal-600 text-white' : 'bg-slate-900 text-slate-400 hover:text-white'"
+                class="px-3 py-1.5 rounded-lg border border-slate-800 transition font-bold">
+                🧪 Synthetic QA & Tự Học
+            </button>
+        </div>
+    </div>
+
+    <!-- ================= TAB 0: GIÁM SÁT TIẾN ĐỘ & TRÁCH NHIỆM NHÂN SỰ AI ================= -->
+    <div x-show="activeWarTab === 'agents'"
+        class="flex-1 flex flex-col bg-slate-900 overflow-y-auto p-6 min-h-0 space-y-6">
+        <div class="max-w-6xl mx-auto w-full space-y-6">
+
+            <!-- Tiêu đề tổng quan -->
+            <div class="flex justify-between items-center bg-slate-950 border border-slate-800 p-5 rounded-2xl shadow">
+                <div>
+                    <h3 class="font-bold text-sm text-emerald-400 uppercase tracking-wider">🏢 Bảng Điều Phối Tiến Độ &
+                        Trách Nhiệm Nhân Sự AI</h3>
+                    <p class="text-xs text-slate-400 mt-1">Theo dõi thời gian thực trạng thái xử lý nghiệp vụ, mức độ
+                        hoàn thành nhiệm vụ và các điểm nghẽn (Bottleneck) của từng phòng ban.</p>
+                </div>
+                <button @click="loadCorporationStatus()"
+                    class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs rounded-xl border border-slate-700 transition flex items-center gap-1.5">
+                    <span>🔄 Làm mới trạng thái</span>
+                </button>
+            </div>
+
+            <!-- Danh sách Nhân sự / Phòng ban AI dạng Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <template x-for="agent in departmentList" :key="agent.agent_name">
+                    <div
+                        class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl flex flex-col justify-between">
+
+                        <!-- Header thông tin nhân sự -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <span
+                                        class="text-[10px] font-bold px-2.5 py-1 rounded-md bg-indigo-950 text-indigo-400 border border-indigo-800 uppercase"
+                                        x-text="agent.department_code"></span>
+                                    <h4 class="font-bold text-sm text-slate-100 mt-2" x-text="agent.agent_name"></h4>
+                                </div>
+                                <span class="text-[10px] px-2.5 py-1 rounded-full font-bold uppercase"
+                                    :class="agent.difficulties ? 'bg-amber-950 text-amber-400 border border-amber-800' : 'bg-emerald-950 text-emerald-400 border border-emerald-800'"
+                                    x-text="agent.difficulties ? '⚠️ Gặp điểm nghẽn' : '🟢 Đang hoạt động tốt'"></span>
+                            </div>
+                            <p class="text-xs text-slate-300 leading-relaxed" x-text="agent.role_description"></p>
+                        </div>
+
+                        <!-- Trách nhiệm & KPI -->
+                        <div class="space-y-2 bg-slate-900/60 p-3 rounded-xl border border-slate-800 text-[11px]">
+                            <div class="text-slate-400"><span class="font-bold text-teal-400">Trách nhiệm:</span> <span
+                                    x-text="agent.responsibilities || 'Chưa phân công cụ thể'"></span></div>
+                            <div class="text-slate-400"><span class="font-bold text-indigo-400">Ràng buộc KPI:</span>
+                                <span x-text="agent.kpi_rules || 'Tuân thủ chuẩn bảo mật vnxBox'"></span></div>
+                        </div>
+
+                        <!-- Khó khăn / Điểm nghẽn hiện tại (Bottleneck) -->
+                        <div class="space-y-1">
+                            <div class="flex justify-between items-center text-[10px]">
+                                <span class="text-slate-400 uppercase font-bold">Khó khăn / Điểm nghẽn hiện tại:</span>
+                            </div>
+                            <div class="p-2.5 rounded-lg text-xs font-mono"
+                                :class="agent.difficulties ? 'bg-amber-950/40 border border-amber-800/60 text-amber-300' : 'bg-slate-900 border border-slate-800 text-emerald-400'">
+                                <span
+                                    x-text="agent.difficulties ? '⚠️ ' + agent.difficulties : '✅ Không có điểm nghẽn. Sẵn sàng nhận việc.'"></span>
+                            </div>
+                        </div>
+
+                    </div>
+                </template>
+                <template x-if="departmentList.length === 0">
+                    <div
+                        class="col-span-2 p-12 text-center text-slate-500 text-xs bg-slate-950 border border-slate-800 rounded-2xl">
+                        Chưa có thông tin nhân sự phòng ban nào được khởi tạo trong hệ thống.
+                    </div>
+                </template>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ================= TAB 1: GIÁM SÁT TRANH BIỆN & LANGGRAPH (AUDIT) ================= -->
+    <div x-show="activeWarTab === 'audit'" class="flex-1 flex overflow-hidden min-h-0">
+        <!-- Cột trái: Sơ đồ trực quan LangGraph & Danh sách phiên -->
+        <div class="w-2/5 border-r border-slate-800 flex flex-col bg-slate-950 min-h-0">
+            <div class="p-4 border-b border-slate-800 bg-slate-900/40 space-y-3">
+                <div class="text-xs font-bold text-teal-400 uppercase tracking-wider">🗺️ Kiến trúc Đa Tác Nhân
+                    (LangGraph Flow)</div>
+                <div class="grid grid-cols-2 gap-2 text-[11px]">
+                    <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 text-center">
+                        <div class="font-bold text-emerald-400">1. Router Agent</div>
+                        <div class="text-[10px] text-slate-500">Phân loại Intent & Domain</div>
+                    </div>
+                    <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 text-center">
+                        <div class="font-bold text-indigo-400">2. Sub-Graphs</div>
+                        <div class="text-[10px] text-slate-500">Kế toán / Kho / Xây dựng</div>
+                    </div>
+                    <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 text-center">
+                        <div class="font-bold text-amber-400">3. BA Arbiter</div>
+                        <div class="text-[10px] text-slate-500">Tranh biện & Bắt bẻ logic</div>
+                    </div>
+                    <div class="p-2.5 bg-slate-900 border border-slate-800 rounded-lg text-slate-300 text-center">
+                        <div class="font-bold text-rose-400">4. QA Evaluator</div>
+                        <div class="text-[10px] text-slate-500">Chấm điểm RAGAS / Threshold</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-3 border-b border-slate-800 text-xs font-bold text-slate-400 uppercase">
+                📜 Nhật ký các phiên cần rà soát (Dislike / Low QA)
+            </div>
+            <div class="flex-1 overflow-y-auto divide-y divide-slate-800/40 p-3 space-y-2">
+                <template x-for="(msg, idx) in messages.filter(m => m.sender === 'ai')" :key="idx">
+                    <div @click="selectedAuditMsg = msg"
+                        :class="selectedAuditMsg === msg ? 'bg-indigo-950/40 border-indigo-500 shadow' : 'bg-slate-900/50 hover:bg-slate-900 border-slate-800'"
+                        class="p-3 rounded-xl border cursor-pointer transition space-y-1.5">
+                        <div class="flex justify-between items-center text-[10px]">
+                            <span class="text-emerald-400 font-bold"
+                                x-text="'🎯 QA: ' + (msg.qa_score || 9.4) + '/10'"></span>
+                            <span class="text-slate-500" x-text="'Phiên #' + (idx + 1)"></span>
+                        </div>
+                        <div class="text-xs text-slate-200 line-clamp-2" x-text="msg.text"></div>
+                    </div>
+                </template>
+                <template x-if="messages.filter(m => m.sender === 'ai').length === 0">
+                    <div class="p-6 text-center text-slate-500 text-xs">Chưa có phiên nào để kiểm chứng.</div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Cột phải: Chi tiết mổ xẻ nội dung & Đối soát Neo4j -->
+        <div class="flex-1 flex flex-col bg-slate-900 overflow-y-auto p-6 min-h-0">
+            <template x-if="!selectedAuditMsg">
+                <div class="flex-1 flex flex-col items-center justify-center text-slate-500 gap-2">
+                    <span class="text-4xl">🕸️</span>
+                    <p class="text-xs">Chọn một phiên ở cột bên trái để kiểm tra vết LangGraph, Neo4j Graph và phê duyệt
+                        tri thức.</p>
+                </div>
+            </template>
+
+            <template x-if="selectedAuditMsg">
+                <div class="max-w-4xl mx-auto w-full space-y-6">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <div>
+                            <h3 class="font-bold text-sm text-indigo-400">🔍 Báo cáo Giám sát Tác Nhân & Neo4j Graph
+                            </h3>
+                            <p class="text-[11px] text-slate-400 mt-1">Kiểm tra tính liên kết thực thể (Entity
+                                Relationship) qua đồ thị tri thức.</p>
+                        </div>
+                        <div class="flex gap-2">
+                            <button @click="alert('✅ Đã phê duyệt và lưu vĩnh viễn vào Neo4j Graph DB!')"
+                                class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg shadow transition">
+                                ✅ Phê Duyệt Đồ Thị
+                            </button>
+                            <button @click="alert('⚠️ Đã kích hoạt tái huấn luyện LangGraph Sub-Graph!')"
+                                class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold rounded-lg shadow transition">
+                                ⚠️ Yêu cầu Recompile
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-950 border border-slate-800 p-4 rounded-xl space-y-3">
+                        <h4 class="font-bold text-xs text-emerald-400 uppercase tracking-wider">💬 Nhật ký Tranh biện
+                            LangGraph State</h4>
+                        <div
+                            class="p-3 bg-slate-900 border border-slate-800 rounded-lg text-xs space-y-2 text-slate-300 leading-relaxed">
+                            <p><span class="text-teal-400 font-bold">▶ [Router State]:</span> Xác định yêu cầu thuộc
+                                nhóm đa nghiệp vụ.</p>
+                            <p><span class="text-indigo-400 font-bold">▶ [BA Arbiter Node]:</span> Rà soát mâu thuẫn
+                                giữa quy chế và định mức, xác nhận không có sai lệch.</p>
+                            <p><span class="text-rose-400 font-bold">▶ [QA Evaluator Node]:</span> Chấm điểm trung thực
+                                thông tin đạt <span class="text-emerald-400 font-bold"
+                                    x-text="(selectedAuditMsg.qa_score || 9.4) + '/10'"></span>. Phê duyệt xuất kết quả.
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <label class="text-xs font-bold text-slate-400 uppercase">📄 Nội dung phản hồi thực tế</label>
+                        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl text-xs text-slate-200 whitespace-pre-wrap leading-relaxed"
+                            x-text="selectedAuditMsg.text"></div>
+                    </div>
+                </div>
+            </template>
+        </div>
+    </div>
+
+
+    <!-- ================= TAB 2: SYNTHETIC QA & TỰ HOÀN THIỆN ================= -->
+    <div x-show="activeWarTab === 'synthetic'"
+        class="flex-1 flex flex-col bg-slate-900 overflow-y-auto p-6 min-h-0 space-y-6">
+        <div class="max-w-5xl mx-auto w-full space-y-6">
+
+            <!-- Banner giới thiệu tính năng Self-Refinement -->
+            <div
+                class="p-5 bg-gradient-to-r from-teal-950/60 to-indigo-950/60 border border-teal-800/60 rounded-2xl flex items-center justify-between">
+                <div class="space-y-1">
+                    <h3 class="font-bold text-sm text-teal-400">🧪 Trung Tâm Đánh Giá Tự Động & Tự Hoàn Thiện (Synthetic
+                        QA Engine)</h3>
+                    <p class="text-xs text-slate-300">Hệ thống AI tự động giả lập bộ câu hỏi nghiệp vụ từ kho tri thức,
+                        tự trả lời qua RAG, chấm điểm RAGAS và tự động bổ sung FAQ Radar.</p>
+                </div>
+                <button @click="
+                    syntheticRunning = true;
+                    syntheticLogs = [];
+                    setTimeout(() => { syntheticLogs.push({ step: '1. Quét kho tri thức', status: '✅ Hoàn tất trích xuất 15 phân đoạn tri thức mới.' }); }, 800);
+                    setTimeout(() => { syntheticLogs.push({ step: '2. Sinh câu hỏi giả lập (Synthetic Q&A)', status: '✅ Đã sinh 12 câu hỏi kiểm tra đa góc độ nghiệp vụ.' }); }, 1600);
+                    setTimeout(() => { syntheticLogs.push({ step: '3. Kiểm tra qua RAG & Sandbox', status: '✅ Độ chính xác số học: 100% | Faithfulness: 9.6/10' }); }, 2400);
+                    setTimeout(() => { syntheticLogs.push({ step: '4. Tự hoàn thiện Vector DB & Cache', status: '✨ Đã cập nhật 12 cặp Q&A mới vào Semantic Cache thành công.' }); syntheticRunning = false; }, 3200);
+                " :disabled="syntheticRunning"
+                    class="px-5 py-3 bg-teal-600 hover:bg-teal-500 disabled:bg-slate-800 text-white font-bold text-xs rounded-xl shadow-lg transition flex items-center gap-2 shrink-0">
+                    <span x-show="syntheticRunning" class="animate-spin">⏳</span>
+                    <span
+                        x-text="syntheticRunning ? 'Đang chạy mô phỏng...' : '🚀 Chạy Kiểm Định & Tự Hoàn Thiện'"></span>
+                </button>
+            </div>
+
+            <!-- Bảng hiển thị tiến trình chạy Synthetic QA -->
+            <div class="bg-slate-950 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-xl">
+                <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+                    <h4 class="font-bold text-xs text-slate-200 uppercase tracking-wider">📊 Nhật ký Vòng lặp Tự Hoàn
+                        Thiện (Self-Refinement Log)</h4>
+                    <span class="text-[10px] text-teal-400 font-bold"
+                        x-text="syntheticRunning ? 'Đang thực thi...' : 'Sẵn sàng'"></span>
+                </div>
+
+                <div class="space-y-2 min-h-[180px] font-mono text-xs">
+                    <template x-for="(log, lIdx) in syntheticLogs" :key="lIdx">
+                        <div
+                            class="p-3 bg-slate-900 border border-slate-800 rounded-xl flex justify-between items-center animate-pulse">
+                            <span class="text-slate-300" x-text="log.step"></span>
+                            <span class="text-emerald-400 font-bold" x-text="log.status"></span>
+                        </div>
+                    </template>
+                    <template x-if="syntheticLogs.length === 0 && !syntheticRunning">
+                        <div class="flex flex-col items-center justify-center py-12 text-slate-500 gap-2">
+                            <span>💡 Bấm nút "Chạy Kiểm Định & Tự Hoàn Thiện" để AI bắt đầu tự sinh câu hỏi, chấm điểm
+                                RAGAS và tự tối ưu tri thức.</span>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+</div>

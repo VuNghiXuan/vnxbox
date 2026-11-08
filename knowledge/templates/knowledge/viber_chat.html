@@ -1,0 +1,160 @@
+<!-- File path: knowledge/templates/knowledge/viber_chat.html -->
+<!-- Chú thích: Giao diện Khung chat chính vnxBox Enterprise (Đã đổi icon tải file rõ nét, chuyên nghiệp) -->
+
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+    <meta charset="UTF-8">
+    <title>vnxBox Enterprise - AI Chat Workspace</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Custom CSS Riêng -->
+    <link rel="stylesheet" href="/static/knowledge/css/viber_chat.css">
+    <!-- Alpine.js -->
+    <script src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+</head>
+
+<body class="bg-gray-900 text-gray-100 font-sans h-screen flex flex-col justify-between p-4" x-data="viberChatData()">
+
+    <!-- Header -->
+    <header class="max-w-4xl w-full mx-auto flex justify-between items-center border-b border-gray-800 pb-3 mb-4">
+        <div>
+            <h1 class="text-2xl font-bold tracking-wider text-green-400">⚡ vnxBox Enterprise AI Chat</h1>
+            <p class="text-xs text-gray-400">Trợ lý thông minh định tuyến ý định tự động (Intent Router Enabled)</p>
+        </div>
+        <a href="/war-room/" target="_blank"
+            class="bg-gray-800 hover:bg-gray-700 text-blue-400 text-xs font-bold px-3 py-2 rounded-lg border border-gray-700 transition">
+            📊 Mở War Room Dashboard
+        </a>
+    </header>
+
+    <!-- Chat Messages Container -->
+    <div id="chat-messages-container" class="max-w-4xl w-full mx-auto flex-1 overflow-y-auto space-y-4 pr-2">
+        <template x-for="(msg, index) in messages" :key="index">
+            <div :class="msg.sender === 'user' ? 'flex justify-end' : 'flex justify-start'">
+                <div class="max-w-2xl rounded-xl p-4 shadow-lg border"
+                    :class="msg.sender === 'user' ? 'bg-blue-600 text-white border-blue-500' : 'bg-gray-800 text-gray-100 border-gray-700'">
+
+                    <!-- Sender badge -->
+                    <div class="text-[10px] uppercase font-mono mb-1 text-gray-400"
+                        x-text="msg.sender === 'user' ? '👤 Sếp Vũ' : '🤖 vnxBox AI'"></div>
+
+                    <!-- Content based on type -->
+                    <template x-if="msg.type === 'corporate_action'">
+                        <div>
+                            <p class="font-bold text-green-400 mb-2 text-sm" x-text="msg.message"></p>
+
+                            <!-- Intent Info Badge -->
+                            <div
+                                class="mb-2 text-xs bg-gray-900 px-2 py-1 rounded inline-block text-yellow-300 font-mono">
+                                ⚡ Ý định: <span x-text="msg.intent?.intent_type"></span>
+                            </div>
+
+                            <!-- DAG Tasks list -->
+                            <div class="mb-3 space-y-1">
+                                <p class="text-xs font-semibold text-blue-400">📋 Các tác vụ DAG đã thực thi:</p>
+                                <template x-for="task in msg.tasks" :key="task.task_id">
+                                    <div
+                                        class="text-xs bg-gray-900 p-2 rounded border border-gray-700 flex justify-between items-center">
+                                        <div>
+                                            <span class="font-mono bg-blue-900 text-blue-200 px-1.5 py-0.5 rounded mr-1"
+                                                x-text="task.task_id"></span>
+                                            <span x-text="task.title"></span>
+                                        </div>
+                                        <span class="text-green-400 font-bold" x-text="task.status"></span>
+                                    </div>
+                                </template>
+                            </div>
+
+                            <!-- Test Report with Copy Button -->
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <p class="text-xs font-semibold text-purple-400">🧪 Báo cáo Kiểm thử QA:</p>
+                                    <button @click="copyText(msg.test_report, index)"
+                                        class="bg-purple-600 hover:bg-purple-500 text-white text-[10px] font-bold px-2 py-0.5 rounded transition">
+                                        <span
+                                            x-text="copiedIndex === index ? '✅ Đã sao chép!' : '📋 Copy Markdown'"></span>
+                                    </button>
+                                </div>
+                                <pre class="bg-gray-900 p-3 rounded-lg text-xs font-mono overflow-x-auto text-gray-300 whitespace-pre-wrap max-h-60"
+                                    x-text="msg.test_report"></pre>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Live Stream Progress Logs -->
+                    <template x-if="msg.type === 'live_stream'">
+                        <div>
+                            <p class="font-bold text-yellow-400 mb-2 text-xs animate-pulse">⚡ Tập đoàn AI đang vận hành
+                                dây chuyền tự trị...</p>
+                            <div
+                                class="bg-black/80 p-3 rounded-lg border border-gray-700 font-mono text-[11px] text-green-400 space-y-1 max-h-56 overflow-y-auto">
+                                <template x-for="logLine in msg.logs">
+                                    <div x-text="logLine"></div>
+                                </template>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- Fast Chat Response -->
+                    <template x-if="msg.type !== 'corporate_action' && msg.type !== 'live_stream'">
+                        <div>
+                            <p class="text-sm leading-relaxed whitespace-pre-wrap" x-text="msg.text"></p>
+                            <div class="mt-1 text-[10px] text-gray-400 font-mono" x-show="msg.intent">
+                                🔍 Phân loại: <span class="text-yellow-400" x-text="msg.intent?.intent_type"></span>
+                            </div>
+                        </div>
+                    </template>
+
+                </div>
+            </div>
+        </template>
+
+        <!-- Loading indicator -->
+        <div x-show="isLoading && messages[messages.length - 1]?.type !== 'live_stream'" class="flex justify-start">
+            <div class="bg-gray-800 border border-gray-700 rounded-xl p-4 text-xs text-gray-400 animate-pulse">
+                ⚙️ Tập đoàn AI đang phân tích và xử lý yêu cầu của Sếp...
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Form tích hợp File Upload SVG rõ nét & Tác vụ -->
+    <div class="max-w-4xl w-full mx-auto mt-4">
+        <div x-show="selectedFile"
+            class="mb-2 text-xs bg-gray-800 border border-gray-700 px-3 py-1.5 rounded-lg flex justify-between items-center text-green-400 font-mono">
+            <span>📂 Đã đính kèm tệp: <strong x-text="selectedFile?.name"></strong></span>
+            <button @click="selectedFile = null" class="text-red-400 hover:text-red-300 font-bold px-1">✕ Hủy</button>
+        </div>
+
+        <form @submit.prevent="sendMessage()" class="flex gap-2 items-center">
+            <!-- Nút chọn file với SVG Icon sắc nét rõ ràng -->
+            <label
+                class="bg-gray-800 hover:bg-gray-700 border border-gray-700 rounded-xl px-3 py-3 flex items-center gap-1.5 cursor-pointer text-gray-300 hover:text-green-400 transition shadow-sm group"
+                title="Tải lên tài liệu nghiệp vụ (PDF, Word, Excel, TXT)">
+                <svg class="w-5 h-5 text-green-400 group-hover:scale-110 transition-transform" fill="none"
+                    stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13">
+                    </path>
+                </svg>
+                <span class="text-xs font-medium hidden sm:inline">Tải tệp</span>
+                <input type="file" class="hidden" @change="selectedFile = $event.target.files[0]">
+            </label>
+
+            <input type="text" x-model="userInput" placeholder="Nhập câu hỏi, ra lệnh chạy tác vụ hoặc tải tệp lên..."
+                class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-green-500"
+                :disabled="isLoading">
+
+            <button type="submit"
+                class="bg-green-600 hover:bg-green-500 text-gray-900 font-bold px-6 py-3 rounded-xl transition shadow-lg disabled:opacity-50 cursor-pointer">
+                🚀 Gửi lệnh
+            </button>
+        </form>
+    </div>
+
+    <!-- Tệp JavaScript riêng -->
+    <script src="/static/knowledge/js/viber_chat.js"></script>
+</body>
+
+</html>
